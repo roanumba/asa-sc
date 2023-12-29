@@ -26,7 +26,7 @@ export const Modal = (props:Props) => {
       centered
       backdrop={'static'}
     >
-      <Header closeButton>
+      <Header closeButton >
         <Title id="contained-modal-title-vcenter">
           {props.title?<>{props.title}</>:<>Modal heading</>}
         </Title>

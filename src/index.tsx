@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import  "./FormView.css"
 import {BgSpinner} from "./ui/BgSpinner";
 import {Dialog} from "./ui/Dialog";
+import { ToastBar } from './ui/ToastBar';
 
 
 export const BusySpinner ={
@@ -18,6 +19,13 @@ export const StaticDialog ={
     hide:()=>{}
 
 }
+
+export const ToastHandler ={
+  title:"",
+  body:"",
+  setVisible:(tf:boolean)=>{}
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -27,6 +35,7 @@ root.render(
     <App />
       <BgSpinner handler={BusySpinner}/>
       <Dialog handle={StaticDialog}/>
+      <ToastBar  handler={ToastHandler}/>
 
   </React.StrictMode>
 );

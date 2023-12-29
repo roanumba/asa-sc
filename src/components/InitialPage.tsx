@@ -4,7 +4,7 @@ import React, {useEffect} from "react";
 import {useHistory} from "react-router-dom";
 import {store} from "../services/storeService";
 import {dialog} from "../services/DialogService";
-import {clientService, get} from "../services/ServerService";
+import { get} from "../services/ServerService";
 
 
 
@@ -18,7 +18,7 @@ export const InitialPage = () => {
     useEffect(() => {
          dialog.setBusy(true);
          get(`/api.php?id=266`).then((d)=>{
-             console.log(`====== ${d}`)
+             console.log(`====== ${JSON.stringify(d)}`)
          }).catch((e)=>{
              console.error(e)
          })
@@ -63,7 +63,7 @@ export const InitialPage = () => {
 
      */
 
-    const  editForm=() =>{
+/*     const  editForm=() =>{
               if (formNo) {
 
                   findForm(formNo, (jsonData) => {
@@ -79,7 +79,7 @@ export const InitialPage = () => {
                   );
 
               }
-          }
+          } */
           
        const newForm=()=> {
            store.formData = [];

@@ -1,4 +1,4 @@
-import {dialog} from "./DialogService";
+import { dialog } from "./DialogService";
 
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
 
@@ -45,11 +45,12 @@ export const get = async (path: string) => {
         responseData = await fetchWithoutToken(path);
     }
     catch (e) {
-        responseData = {error: true, e};
+        responseData = { error: true, e };
     }
     dialog.setBusy(false);
     return responseData;
 };
+
 export const post = async (path: string, body: any) => {
     dialog.setBusy(true);
     let responseData;
@@ -64,152 +65,54 @@ export const post = async (path: string, body: any) => {
 
     }
     catch (e) {
-        responseData = {error: e};
+        responseData = { error: e };
     }
     dialog.setBusy(false);
     return responseData;
 };
 
-export class ServerService {
-    /* constructor(private dialog: DialogService, private router: Router,
-                 public store: StoreService) {
-         klass = this;
-     }
 
-     private uploadToSever(file, formNumber,type, dialog) {
-         let url = "server/fileUpload.php";
-         let fd = new FormData();
-
-         fd.append('image', file);
-         fd.append('formNumber', formNumber);
-         fd.append('uploadType', type);
-
-         $.ajax({
-             url: url,
-             type: "POST",
-             data: fd,
-             processData: false,
-             contentType: false,
-             success: (data, textStatus, jqXHR) => {
-                 let jData = JSON.parse(data);
-                 let dlgType = undefined;
-                 let title = "Admission Letter Uploaded";
-                 if (type==='passport') {
-                     title = "Passport Photo Uploaded";
-                 }
-                 if (jData.error) {
-                     dlgType = BootstrapDialog.TYPE_DANGER;
-                     title = "Upload error"
-                 }
-                 let dlg = this.dialog.showDialog(title, jData.message, null, dlgType);
-                 dlg.options.onhidden = function () {
-                     if (!jData.error) {
-                         dialog.close();
-                     }
-                 };
-             },
-             error: function (jqXHR, textStatus, errorThrown) {
-                 $('#uploadResponse').html('error ' + textStatus + ' ' + errorThrown);
-
-             }
-         });
-     }
-
-
-
-     private showLastPage(msgFunc: (dialog) => any,type, lastPage) {
-         let dlgType = BootstrapDialog.TYPE_WARNING;
-         let title = "Admission Letter";
-         if (type==='passport') {
-             dlgType = BootstrapDialog.TYPE_SUCCESS;
-             title = "Passport Sized Photo";
-         }
-         let dlg = this.dialog.showDialog(
-             title,
-             msgFunc,
-             [
-                 {
-                     label: "Cancel",
-                     action: function (d) {
-                         d.close();
-                     }
-                 }
-             ],dlgType
-         );
-         if (lastPage) {
-             dlg.options.onhidden = () => {
-                 this.router.navigate(['lastPage'])
-             };
-         }
-         return  dlg;
-     }
- */
-
-    public saveForm = async (params: { method: string; params: any }, callback: (data: any, error: any) => void) => {
-
-        const resp: any = await post(`/formService.php`, params);
-        if (resp.error) {
-            callback(null, resp.error)
-        }
-        else {
-            callback(resp, null)
-        }
-    }
-
-    public uploadFile = (formNumber: string, file: string) => {
-
-        if (file === 'letter') {
-            this.uploadAdmissionLetter(formNumber)
-        }
-        else if (file === 'passport') {
-            this.uploadPassportSizedPhoto(formNumber)
-        }
-        else if (file === 'both') {
-            let dlg: any = this.uploadAdmissionLetter(formNumber);
-            dlg.options.onhidden = () => {
-                this.uploadPassportSizedPhoto(formNumber, true);
-            };
-        }
-    }
-
-    private uploadAdmissionLetter(formNumber: string, lastPage = false) {
-        let msgFunc = function (dialog) {
-
-            let msg = `<div>
-              Your application has been save. Please click <b>Choose File</b> to load a copy of your letter of admission. 
-              If you do not currently have letter of admission, click <b>Cancel</b> to continue.
-              <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
-              </div>`;
-            msg.find("#admissionLetter").change((e) => {
-                if (this.files.length > 0) {
-                    klass.uploadToSever(this.files[0], formNumber, 'letter', dialog);
-                }
-            });
-            return msg;
-        };
-        return this.showLastPage(msgFunc, 'letter', lastPage);
-    }
-
-    private uploadPassportSizedPhoto(formNumber, lastPage?) {
-        let msgFunc = function (dialog) {
-
-            let msg = $(`<div>
-              Your application has been save. Please click <b>Choose File</b> to load your passport sized photo. 
-              If you do not currently have your passport sized photo, click <b>Cancel</b> to continue.
-              <input type="file" id="passport" accept="image/!*"/>
-              </div>`);
-            msg.find("#passport").change(function (e) {
-                if (this.files.length > 0) {
-                    klass.uploadToSever(this.files[0], formNumber, 'passport', dialog);
-                }
-            });
-            return msg;
-        };
-        return this.showLastPage(msgFunc, 'passport', lastPage);
-    }
-
+const  openFileDialog = (fileType: string) => {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = fileType;
+    input.click();
+    return input;
 }
 
-const clientService = new ServerService();
-export {clientService}
 
+export const uploadFile = (formNumber: string, file: string, callback:(resp: any, error: any)=>void) => {
+
+    try {
+            openFileDialog('image/*,application/pdf').onchange =async (e:any) => {
+                const files=e.target.files;
+                const formData = new FormData();
+                formData.append('image',files[0]);
+                formData.append('formNumber',formNumber);
+                formData.append('uploadType',file);
+
+                const response = await fetch(`${apiUrl}/fileUpload.php`,{
+                    method:'POST',
+                    body:formData
+                } );
+                const result = await response.json();
+                
+                callback(result, null)
+               
+            }
+    } catch (error) {
+        callback(null, error)
+    }
+        
+     
+    }
+export const saveForm = async (params: { method: string; params: any }, callback: (data: any, error: any) => void) => {
+
+    const resp: any = await post(`/formService.php`, params);
+    if (resp.error) {
+        callback(null, resp.error)
+    }
+    else {
+        callback(resp, null)
+    }
+}

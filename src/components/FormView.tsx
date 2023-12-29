@@ -2,11 +2,13 @@
 import React, {useEffect, useState} from 'react';
 import {store} from "../services/storeService";
 import {useHistory} from "react-router-dom";
-import {Col, Row} from "react-bootstrap";
+import {Button, Col, Row} from "react-bootstrap";
 import {BusySpinner} from "../index";
 import {dialog} from "../services/DialogService";
-import {clientService} from "../services/ServerService";
-import {log} from "util";
+import { saveForm, uploadFile} from "../services/ServerService";
+
+
+
 
 export const FormView = () => {
     const history=useHistory() ;
@@ -30,9 +32,45 @@ export const FormView = () => {
         let emailReg = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[A-Z]{2}|com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum)\b/;
         return emailReg.test(email);
     }
+    const uploadAdmissionLetter=(formNumber:string)=>{
+        dialog.showDialog('Upload Admission Letter',
+            <div>Please click <b>Choose File</b> to load a copy of your letter of admission.
+                If you do not currently have letter of admission, click <b>Cancel</b> to continue.</div>,
+            <>
+                <Button onClick={() => {
+                    uploadPassportSizedPhoto(formNumber, false);
+                }}>Cancel</Button>
+                <Button onClick={() => {
+                    uploadFile(formNumber,'admissionLetter',(resp,error)=>{
+                        if (error){
+                            console.log(error)
+                        }
+                        uploadPassportSizedPhoto(formNumber, false);
+                    });
+
+                }}>Upload</Button>
+            </>);
+    }
+    const uploadPassportSizedPhoto=(formNumber:string, skip:boolean)=>{
+        const dlg=dialog.showDialog('Upload Passport Sized Photo',
+            <div>Please click <b>Choose File</b> to load a copy of your passport sized photo.
+                If you do not currently have a passport sized photo, click <b>Cancel</b> to continue.</div>,
+            <>
+                <Button onClick={() => {}}>Cancel</Button>
+                <Button onClick={() => {
+                    uploadFile(formNumber,'passports',(resp,error)=>{
+                        if (error){
+                            console.log(error)
+                        }
+                    });                    
+                }}>Upload</Button>
+            </>);
+    }
+
+
     const sendForm=(method:string)=> {
         const form = document.querySelector('#form');
-        const body = document.querySelector('body') || {scrollTop:0};
+        const body:any = document.querySelector('body') || {scrollTop:0};
 
         if (form) {
             const arrayData = new FormData(form as HTMLFormElement);
@@ -62,36 +100,49 @@ export const FormView = () => {
                     "Form Error",
                     errorElements.length + " fields are empty. Please fill them and resubmit"
                 );
-                body.scrollTop=(0);
+                body.scrollIntoView();
             }
             else if (!isEmail(jsonData.email)) {
                 dialog.showErrorDialog(
                     "Form Error",
                     <><b>  {jsonData.email}  </b> is not a valid email address.</>
                 );
-                body.scrollTop=(0);
+                body.scrollIntoView();
             }
             else {
                 dialog.setBusy(true);
                 let params = {method: method, params: jsonData};
                 setTimeout(()=>{dialog.setBusy(false)},100);
-                clientService.saveForm(params,(resp,error)=>{
+                saveForm(params,(resp,error)=>{
                            if (error){
                                console.log(error)
                            }else{
+                            console.log(resp);
+                            
+                    // const resp = {data:{formNumber:'1234'}}
                                console.log(resp.data.formNumber)  ;
                                store.formNo =   resp.data.formNumber;
-                               clientService.uploadFile(jsonData.data.formNumber, 'both');
-                           }
-                })
-/*                $.post("server/formService.php?", JSON.stringify(params), (data, status) => {
-                    this.dialog.setBusy(false);
-                    let jsonData = JSON.parse(data);
-                    this.store.formNo = jsonData.data.formNumber;
-                    this.server.uploadFile(jsonData.data.formNumber, 'both');
-                    $("body").scrollTop(0);
+                               dialog.showDialog(
+                                "Form Saved",<div>
+                                    <div>
+                                        Your form was saved successfully!<br/>
+                                        Your form number is: <b>{resp.data.formNumber}</b><br/>
+                                        Please write it down for future reference and <br/>
+                                        for updating your application form <br/>
+                                        or uploading your letter of admission<br/>
+                                        or uploading your passport photograph.<br/>
+                                        <br/>
+                                        <span style={{color:'red'}}>
+                                            The form number is also sent to your email address.
+                                        </span>
+                                    </div>
+                                </div>,<Button onClick={() => {
+                                    uploadAdmissionLetter(resp.data.formNumber);
+                                }}>Ok</Button>
+                            )
+                          
+                         }  })
 
-                });*/
             }
         }
      };
@@ -344,3 +395,5 @@ export const FormView = () => {
 
         </form>;
 };
+
+
