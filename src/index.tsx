@@ -20,15 +20,29 @@ export const StaticDialog ={
 
 }
 
-export const ToastHandler ={
-  title:"",
-  body:"",
-  setVisible:(tf:boolean)=>{}
-}
+const ToastHandler ={
+  setMessage:(type:number,message:string)=>{}
+} 
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+export const toastBar={
+  success:(message:string)=>{
+    ToastHandler.setMessage(1,message)
+  },
+  error:(message:string)=>{
+    ToastHandler.setMessage(2,message)
+  },
+  info:(message:string)=>{
+    ToastHandler.setMessage(3,message)
+  },
+  warning:(message:string)=>{
+    ToastHandler.setMessage(4,message)
+  },
+
+
+}
 root.render(
   <React.StrictMode>
 

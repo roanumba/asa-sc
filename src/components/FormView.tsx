@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {store} from "../services/storeService";
 import {useHistory} from "react-router-dom";
 import {Button, Col, Row} from "react-bootstrap";
-import {BusySpinner} from "../index";
+import {BusySpinner, toastBar} from "../index";
 import {dialog} from "../services/DialogService";
 import { saveForm, uploadFile} from "../services/ServerService";
 
@@ -17,6 +17,7 @@ export const FormView = () => {
          BusySpinner.setBusy(true);
          setTimeout(()=>{
              BusySpinner.setBusy(false)
+             fillForm();
          },1000)
     }, []);
     const closeView=() =>{
@@ -27,7 +28,32 @@ export const FormView = () => {
     * document.querySelector('#form').querySelectorAll('[name]')[0].style.borderColor='red'
     * */
 
-
+    const fillForm=()=>{
+        // let formData = this.store.formData;
+        // this.loadEmptyForm();
+        // let arrayData = $('form').serializeArray();
+        // arrayData.forEach(function (o) {
+        //     if (formData[o.name]) {
+        //         $('[name="' + o.name + '"]').val(formData[o.name]);
+        //     }
+        // });
+        const formData:any=store.formData ;
+        console.log(`formData: ${JSON.stringify(formData)}`);
+        
+        const form=document.querySelector('#form');
+        if (form){
+            const arrayData = new FormData(form as HTMLFormElement);
+            arrayData.forEach((value: FormDataEntryValue, key: string, parent: FormData) => {
+                const aField= form.querySelector('[name="' + key + '"]') as HTMLFormElement;
+                if (aField)  {
+                    aField.style.borderColor = ''
+                }
+                 if (formData[key]) {
+                    aField.value=formData[key];
+                }
+            });
+        }
+    }   
     function isEmail(email:string) {
         let emailReg = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[A-Z]{2}|com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum)\b/;
         return emailReg.test(email);
@@ -43,7 +69,8 @@ export const FormView = () => {
                 <Button onClick={() => {
                     uploadFile(formNumber,'admissionLetter',(resp,error)=>{
                         if (error){
-                            console.log(error)
+                           toastBar.error('Error uploading admission letter');
+                           return;
                         }
                         uploadPassportSizedPhoto(formNumber, false);
                     });
@@ -52,16 +79,22 @@ export const FormView = () => {
             </>);
     }
     const uploadPassportSizedPhoto=(formNumber:string, skip:boolean)=>{
-        const dlg=dialog.showDialog('Upload Passport Sized Photo',
+        dialog.showDialog('Upload Passport Sized Photo',
             <div>Please click <b>Choose File</b> to load a copy of your passport sized photo.
                 If you do not currently have a passport sized photo, click <b>Cancel</b> to continue.</div>,
             <>
-                <Button onClick={() => {}}>Cancel</Button>
+                <Button onClick={() => {
+                    dialog.hideDialog();
+                    history.push('/lastViewPage');
+                }}>Cancel</Button>
                 <Button onClick={() => {
                     uploadFile(formNumber,'passports',(resp,error)=>{
                         if (error){
-                            console.log(error)
+                            toastBar.error('Error uploading passport sized photo');
+                            return;
                         }
+                        dialog.hideDialog();
+                        history.push('/lastViewPage');
                     });                    
                 }}>Upload</Button>
             </>);
@@ -110,9 +143,9 @@ export const FormView = () => {
                 body.scrollIntoView();
             }
             else {
-                dialog.setBusy(true);
+                
                 let params = {method: method, params: jsonData};
-                setTimeout(()=>{dialog.setBusy(false)},100);
+                
                 saveForm(params,(resp,error)=>{
                            if (error){
                                console.log(error)

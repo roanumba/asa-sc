@@ -6,32 +6,60 @@ import { Header } from 'react-bootstrap/lib/Modal';
 interface Props {
 
   handler:{
-    title:React.ReactNode;
-    body:React.ReactNode;
-    setVisible:(tf:boolean)=>void
+    setMessage:(type:number,message:string)=>void;
   };
 }
-export const ToastBar=(props:Props)=> {
-  const [show, setShow] = useState(true);
+export const ToastBar = (props: Props) => {
+  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState('');
+  const [title, setTitle] = useState('');
 
-  props.handler.setVisible=setShow;                     
 
-  const Header=<>
-          <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" />
-        <strong className="me-auto">Bootstrap</strong>
-        {/* <small>11 mins ago</small> */}
-        </>
-  const Body=<>
-  Hello, world! This is a toast message.
-  </>
+  props.handler.setMessage = (type: number, message: string) => {
+    let strType='Success'
+    switch (type) {
+
+      case 2:
+        strType = "Error";
+        break;
+      case 3:
+        strType = "Info";
+        break;
+      case 4:
+        strType = "Warning";
+        break;
+    }
+    setTitle(strType);
+    setMessage(message);
+    setShow(true);
+  }
+
+
+
 
   return (
-    <ToastContainer className="p-3" position='top-center' style={{zIndex:1}}>
-    <Toast onClose={() => setShow(false)} show={show} delay={3000} autohide>
-      <Toast.Header>
-        {Header}
+    <ToastContainer  position='top-center' style={{zIndex:1070}}>
+    <Toast 
+    onClose={() => { setShow(false) }} 
+    // className="d-inline-block m-1"
+    show={show} 
+    bg={title==="Error"?"danger":title.toLowerCase()}
+    // delay={3000} 
+    autohide
+    style={{width:'auto',minWidth:'150px'}}
+    >
+      <Toast.Header className={`text-${title==="Error"?"danger":title==="Success"?"success":"dark"}`}>
+      <img
+              src="holder.js/20x20?text=%20"
+              className="rounded me-2"
+              alt=""
+            />
+            <strong className="me-auto text-denger">{title}</strong>        
+        
       </Toast.Header>
-      <Toast.Body>{Body}</Toast.Body>
+      <Toast.Body className={(title==="Error" ||title==='Success') ? 'text-white':""}>
+        {message}
+        </Toast.Body>
     </Toast>
   </ToastContainer>
   );

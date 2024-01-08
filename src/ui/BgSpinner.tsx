@@ -21,6 +21,7 @@ export const BgSpinner = (props:Props) => {
                 opacity: 0.4,
                 width: "100%",
                 height: "100%",
+                zIndex: 1060
             }}/>
             <Spinner animation="border"
                      style={{
@@ -29,7 +30,8 @@ export const BgSpinner = (props:Props) => {
                          top: "50%",
                          marginLeft: "-4em",
                          marginTop: "-4em",
-                     }}
+                         zIndex: 1060
+                    }}
             />
             </>}
     </div>;

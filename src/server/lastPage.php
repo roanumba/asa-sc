@@ -1,10 +1,17 @@
 <?php
 include 'dbConnection.php';
 
+$request_body = file_get_contents('php://input');
+$json = json_decode($request_body);
 
-$formNumber = $_REQUEST['formNumber'];
-$deadline = $_REQUEST['deadline'];
-$year = $_REQUEST['year'];
+$formNumber = $json->formNumber;
+$deadline = $json->deadline;
+$year = $json->year;
+
+// $formNumber = $_REQUEST['formNumber'];
+// $deadline = $_REQUEST['deadline'];
+// $year = $_REQUEST['year'];
+
 $row = findFormByFormNumber($formNumber);
 $error = sendMail($row, $formNumber,$year,$deadline);
 echo '<<==>>';

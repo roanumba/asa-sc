@@ -2,7 +2,7 @@ import moment from "moment";
 import {Moment} from "moment";
 
 export class StoreService {
-    dateline = '2022-6-11';
+    dateline = '2024-01-11';
     momentDeadLineDate:Moment=moment(this.dateline,'YYYY-MM-DD');
     deadline = this.momentDeadLineDate.format('LL');
     year=this.momentDeadLineDate.year();
