@@ -12,6 +12,8 @@ import {InitialPage} from "./components/InitialPage";
 import {About} from "./components/About";
 import {Dashboard} from "./components/Dashboard";
 import {FormView} from "./components/FormView";
+import { LastPage } from "./components/LastPage";
+import { RouteHome } from "./components/RouteHome";
 
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
 
@@ -49,11 +51,13 @@ export const App=() =>{
           <Route exact path="/" component={InitialPage} key={1}/>
 
             <Route exact path="/formViewPage" component={FormView} key={2}/>
-            <Route exact path="/about" component={About} key={2}/>
+            <Route exact path="/lastViewPage" component={LastPage} key={3}/>
+            {/* <Route exact path="/about" component={About} key={2}/> */}
 
-          <Route exact path="/dashboard" component={Dashboard} key={3}/>
+          {/* <Route exact path="/dashboard" component={Dashboard} key={3}/> */}
            <Redirect to={"/"}/>
         </Switch>
+        <RouteHome/>
       
     </Router>
   );
