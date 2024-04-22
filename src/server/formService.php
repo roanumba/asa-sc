@@ -74,7 +74,8 @@ function submitForm($param)
         return array("formNumber" => $formNumber);
     } catch (Exception $exc) {
         $error = $exc->getMessage();
-        return array('error' => TRUE, 'errorMsg' => $error);
+        // return array('error' => TRUE, 'errorMsg' => $error);
+        throw new Exception("Unknown system error during form submission");
     }
 }
 
@@ -128,7 +129,8 @@ function updateRecord($param)
         return array("formNumber" => $param->formNumber);
     } catch (Exception $exc) {
         $error = $exc->getMessage();
-        return array('error' => TRUE, 'errorMsg' => $error);
+        // return array('error' => TRUE, 'errorMsg' => $error);
+        throw new Exception("Unknown system error during form update");
     }
 }
 
@@ -147,7 +149,8 @@ function findFormByFormNumber($params)
         return $row;
     } catch (Exception $exc) {
         $error = $exc->getMessage();
-        return array('error' => TRUE, 'errorMsg' => $error);
+        // return array('error' => TRUE, 'errorMsg' => $error);
+        throw new Exception("Unknown system error during form retrieval");
     }
 }
 

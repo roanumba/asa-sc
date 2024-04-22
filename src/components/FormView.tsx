@@ -1,6 +1,6 @@
 
 import React, {useEffect, useState} from 'react';
-import {store} from "../services/storeService";
+import {store} from "../";
 import {useHistory} from "react-router-dom";
 import {Button, Col, Row} from "react-bootstrap";
 import {BusySpinner, toastBar} from "../index";
@@ -148,7 +148,7 @@ export const FormView = () => {
                 
                 saveForm(params,(resp,error)=>{
                            if (error){
-                               console.log(error)
+                              toastBar.error('Error saving form');
                            }else{
                             console.log(resp);
                             
@@ -305,7 +305,7 @@ export const FormView = () => {
                             <div className="col-sm-4">
                                 <select className="form-control input-sm" name="lga">
                                     <option> </option>
-                                    <option>Aguata</option>
+                                    {/* <option>Aguata</option> */}
                                     <option>Aguata</option>
                                     <option>Awka North</option>
                                     <option>Awka South</option>

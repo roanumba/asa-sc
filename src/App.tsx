@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
     BrowserRouter as Router,
     Switch,
@@ -14,6 +15,8 @@ import {Dashboard} from "./components/Dashboard";
 import {FormView} from "./components/FormView";
 import { LastPage } from "./components/LastPage";
 import { RouteHome } from "./components/RouteHome";
+import { ClosedPage } from "./components/ClosedPage";
+import { OpeningPage } from "./components/OpeningPage";
 
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
 
@@ -52,12 +55,14 @@ export const App=() =>{
 
             <Route exact path="/formViewPage" component={FormView} key={2}/>
             <Route exact path="/lastViewPage" component={LastPage} key={3}/>
+            <Route exact path="/closedPage" component={ClosedPage} key={4}/>
+            <Route exact path="/openingPage" component={OpeningPage} key={5}/>
             {/* <Route exact path="/about" component={About} key={2}/> */}
 
           {/* <Route exact path="/dashboard" component={Dashboard} key={3}/> */}
            <Redirect to={"/"}/>
         </Switch>
-        <RouteHome/>
+        <RouteHome  />
       
     </Router>
   );

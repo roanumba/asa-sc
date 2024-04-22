@@ -1,15 +1,29 @@
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-export const RouteHome = () => {
-   const history = useHistory();
-    useEffect(() => {
-      const today=moment();
-      
-        history.push('/');
+import { store } from "../";
 
-    }, []);
-    return (
-       <div/>
-    );
-    };
+export const RouteHome = () => {
+   
+   const history = useHistory();
+   useEffect(() => {
+      (async () => {
+         await store.init();
+      const today = moment();
+      if (today.isAfter(moment(store.CLOSING_DATE).add(24, 'hours'))) {
+         history.push('/closedPage');
+         return;
+      }
+      if (today.isBefore(moment(store.OPENING_DATE))) {
+         history.push('/openingPage');
+         return;
+      }
+
+      history.push('/');
+   })();
+
+   }, []);
+   return (
+      <div />
+   );
+};

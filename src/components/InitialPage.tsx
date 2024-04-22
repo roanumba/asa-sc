@@ -2,7 +2,7 @@ import {Button, Col, Row} from "react-bootstrap";
 import React, {useEffect,useState} from "react";
 // import {navigateTo} from "../App";
 import {useHistory} from "react-router-dom";
-import {store} from "../services/storeService";
+import {store} from "../";
 import {dialog} from "../services/DialogService";
 import { findForm, get, uploadFile} from "../services/ServerService";
 import { toastBar } from "..";
@@ -62,7 +62,7 @@ export const InitialPage = () => {
             const formNo=store.formNo;
             if (type === "passport") {
                 findForm(formNo, (jsonData:any,error:any) => {
-                    if (error) {
+                    if (error || !jsonData.data) {
                         toastBar.error("Error finding form with number: '" + formNo + "'.");
                     }else{
                     store.formData = jsonData.data;
@@ -78,7 +78,7 @@ export const InitialPage = () => {
                 });
               }else if (type === "letter") {
                 findForm(formNo, (jsonData:any,error:any) => {
-                    if (error) {
+                    if (error || !jsonData.data) {
                         toastBar.error("Error finding form with number: '" + formNo + "'.");
                        
                     }else{
@@ -97,7 +97,7 @@ export const InitialPage = () => {
                 });
             }else if (type === "form") {
                     findForm(formNo, (jsonData:any,error:any) => {
-                        if (error) {
+                        if (error || !jsonData.data) {
                             toastBar.error("Error finding form with number: '" + formNo + "'.");
                            
                         }else{

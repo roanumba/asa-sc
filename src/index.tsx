@@ -8,6 +8,7 @@ import  "./FormView.css"
 import {BgSpinner} from "./ui/BgSpinner";
 import {Dialog} from "./ui/Dialog";
 import { ToastBar } from './ui/ToastBar';
+import { StoreService } from './services/storeService';
 
 
 export const BusySpinner ={
@@ -42,14 +43,19 @@ export const toastBar={
   },
 
 
+
 }
+
+export const store = new StoreService();
+
+
 root.render(
   <React.StrictMode>
 
-    <App />
       <BgSpinner handler={BusySpinner}/>
       <Dialog handle={StaticDialog}/>
       <ToastBar  handler={ToastHandler}/>
+      <App />
 
   </React.StrictMode>
 );
@@ -58,3 +64,4 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
