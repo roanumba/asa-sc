@@ -19,7 +19,7 @@ function replaceWitheSpace($txt) {
 
 $formYear = filter_input(INPUT_POST, "year");
 $accessCode = filter_input(INPUT_POST, "accd");
-if ($accessCode) {
+if ($accessCode == 'AsaGpdf||') {
     $pdf = new PDF();
 
     $con = getConnection();
@@ -82,8 +82,7 @@ if ($accessCode) {
 
 
         $letter = $rows["admissionLetter"];
-        $file_ext = pathinfo($letter, PATHINFO_EXTENSION);
-        // $file_ext = strtolower(end(explode('.', $letter)));
+        $file_ext = strtolower(end(explode('.', $letter)));
         if ($file_ext && $file_ext !== "pdf") {
             $pdf->AddPage();
             $pdf->Image('images/' . $letter, 10, 10, 200, 350);
@@ -110,6 +109,11 @@ if ($accessCode) {
             }
 
 
+
+//            $pdf->setSourceFile($file);
+//            $tpl = $pdf->importPage(1, '/MediaBox');
+//            $pdf->addPage();
+//            $pdf->useTemplate($tpl);
         } else if ($file_ext) {
             $pdf->AddPage();
             $pdf->writeText(150, 10, $rows["formNumber"]);
@@ -124,7 +128,7 @@ if ($accessCode) {
     }
     mysqli_close($con);
     $pdf->Output();
- 
+    ob_end_flush();
 } else {
     echo '
 <form action="testFpdf.php" method="post">
