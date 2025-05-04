@@ -7,17 +7,27 @@ export class StoreService {
     deadline = this.momentDeadLineDate.format('LL');
     year=this.momentDeadLineDate.year();
     formNo='';
-    private _formData = [] as any[];
+    private _formData = {} as any;
 
-    get formData(): any[] {
+    get formData(): any {
         return this._formData;
     }
 
-    set formData(value: any[]) {
+    set formData(value: any) {
         this._formData = value;
     }
-    isOverDeadLine (date:Moment):boolean{
+    isOverDeadLine= (date:Moment):boolean=>{
          return date.isAfter(this.momentDeadLineDate);
+    }
+    isBeforeDeadLine= (date:Moment):boolean=>{
+        return date.isBefore(this.momentDeadLineDate);
+    }
+    clearForm=()=>{
+        this.formNo='';
+        this.formData={};
+    }
+    isFormEmpty=()=>{
+        return Object.keys(this.formData).length === 0;
     }
 
 

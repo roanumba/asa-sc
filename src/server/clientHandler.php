@@ -55,7 +55,7 @@ try{
 }
 
 
-function calc($params) {
-   return array("query"=>$params['k']) ;
-}
+// function calc($params) {
+//    return array("query"=>$params['k']) ;
+// }
 

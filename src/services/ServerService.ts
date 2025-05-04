@@ -1,3 +1,4 @@
+import React from 'react';
 import {dialog} from "./DialogService";
 
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
@@ -145,9 +146,9 @@ export class ServerService {
      }
  */
 
-    public saveForm = async (params: { method: string; params: any }, callback: (data: any, error: any) => void) => {
-
-        const resp: any = await post(`/formService.php`, params);
+    public saveForm = async (jsonData:any,method:string, callback: (data: any, error: any) => void) => {
+        const body = {method: method, params: jsonData};
+        const resp: any = await post(`/formService.php`, body);
         if (resp.error) {
             callback(null, resp.error)
         }
@@ -156,57 +157,83 @@ export class ServerService {
         }
     }
 
-    public uploadFile = (formNumber: string, file: string) => {
+    public uploadFile = async (formNumber: string, file: any,type:string,callback: (data: any, error: any) => void) => {
 
-        if (file === 'letter') {
-            this.uploadAdmissionLetter(formNumber)
-        }
-        else if (file === 'passport') {
-            this.uploadPassportSizedPhoto(formNumber)
-        }
-        else if (file === 'both') {
-            let dlg: any = this.uploadAdmissionLetter(formNumber);
-            dlg.options.onhidden = () => {
-                this.uploadPassportSizedPhoto(formNumber, true);
-            };
-        }
-    }
-
-    private uploadAdmissionLetter(formNumber: string, lastPage = false) {
-        let msgFunc = function (dialog) {
-
-            let msg = `<div>
-              Your application has been save. Please click <b>Choose File</b> to load a copy of your letter of admission. 
-              If you do not currently have letter of admission, click <b>Cancel</b> to continue.
-              <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
-              </div>`;
-            msg.find("#admissionLetter").change((e) => {
-                if (this.files.length > 0) {
-                    klass.uploadToSever(this.files[0], formNumber, 'letter', dialog);
-                }
+        try {
+            const  url = "/fileUpload.php";
+            let fd = new FormData();
+    
+            fd.append('image', file);
+            fd.append('formNumber', formNumber);
+            fd.append('uploadType', type);
+            dialog.setBusy(true);
+            const resp: any = await fetchWithoutToken(url, {
+                method: 'POST',
+                body: fd,
             });
-            return msg;
-        };
-        return this.showLastPage(msgFunc, 'letter', lastPage);
+            if (resp.error) {
+                callback(null, resp.error)
+            }
+            else {
+                callback(resp, null)
+            }
+
+        } catch (error) {
+            callback(null, error)
+        }finally {
+            dialog.setBusy(false);
+        }
+
+    }
+    public findform=async (formNo:string, callback: (data: any, error: any) => void) => {
+        dialog.setBusy(true);
+        const body={method: "findFormByFormNumber", params: {formNumber: formNo}}
+       
+        const resp: any = await post(`/formService.php`, body);
+        if (resp.error) {
+            callback(null, resp.error)
+        }
+        else {
+            callback(resp, null)
+        }
+        dialog.setBusy(false);
     }
 
-    private uploadPassportSizedPhoto(formNumber, lastPage?) {
-        let msgFunc = function (dialog) {
+    // private uploadAdmissionLetter(formNumber: string, lastPage = false) {
+    //     let msgFunc = function (dialog) {
 
-            let msg = $(`<div>
-              Your application has been save. Please click <b>Choose File</b> to load your passport sized photo. 
-              If you do not currently have your passport sized photo, click <b>Cancel</b> to continue.
-              <input type="file" id="passport" accept="image/!*"/>
-              </div>`);
-            msg.find("#passport").change(function (e) {
-                if (this.files.length > 0) {
-                    klass.uploadToSever(this.files[0], formNumber, 'passport', dialog);
-                }
-            });
-            return msg;
-        };
-        return this.showLastPage(msgFunc, 'passport', lastPage);
-    }
+    //         let msg = `<div>
+    //           Your application has been save. Please click <b>Choose File</b> to load a copy of your letter of admission. 
+    //           If you do not currently have letter of admission, click <b>Cancel</b> to continue.
+    //           <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
+    //           </div>`;
+    //         msg.find("#admissionLetter").change((e) => {
+    //             if (this.files.length > 0) {
+    //                 klass.uploadToSever(this.files[0], formNumber, 'letter', dialog);
+    //             }
+    //         });
+    //         return msg;
+    //     };
+    //     return this.showLastPage(msgFunc, 'letter', lastPage);
+    // }
+
+    // private uploadPassportSizedPhoto(formNumber:string, lastPage?) {
+    //     let msgFunc = function (dialog) {
+
+    //         let msg = $(`<div>
+    //           Your application has been save. Please click <b>Choose File</b> to load your passport sized photo. 
+    //           If you do not currently have your passport sized photo, click <b>Cancel</b> to continue.
+    //           <input type="file" id="passport" accept="image/!*"/>
+    //           </div>`);
+    //         msg.find("#passport").change(function (e) {
+    //             if (this.files.length > 0) {
+    //                 klass.uploadToSever(this.files[0], formNumber, 'passport', dialog);
+    //             }
+    //         });
+    //         return msg;
+    //     };
+    //     return this.showLastPage(msgFunc, 'passport', lastPage);
+    // }
 
 }
 

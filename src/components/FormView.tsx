@@ -6,16 +6,35 @@ import {Col, Row} from "react-bootstrap";
 import {BusySpinner} from "../index";
 import {dialog} from "../services/DialogService";
 import {clientService} from "../services/ServerService";
-import {log} from "util";
+
 
 export const FormView = () => {
     const history=useHistory() ;
     const [submitDisabled, setSubmitDisabled] = useState(true);
     useEffect(() => {
-         BusySpinner.setBusy(true);
-         setTimeout(()=>{
-             BusySpinner.setBusy(false)
-         },1000)
+        const form = document.querySelector('#form');
+     
+        if (!store.isFormEmpty()) {
+            if (form) {
+                const controls=document.querySelectorAll(".form-control") as NodeListOf<HTMLInputElement>;
+                controls.forEach((v:any)=>{
+                    //assign values to controls
+                    v.value=store.formData[v.name];
+                });
+            }
+        } else {
+            if (form) {
+                store.formData = {} ;
+                const controls=document.querySelectorAll(".form-control") as NodeListOf<HTMLInputElement>;
+                controls.forEach((v:any)=>{
+                    store.formData[v.name]="" ;
+                });
+            }
+        }
+        return () => {
+
+            store.clearForm();
+        };
     }, []);
     const closeView=() =>{
         history.push('/') ;
@@ -73,28 +92,68 @@ export const FormView = () => {
             }
             else {
                 dialog.setBusy(true);
-                let params = {method: method, params: jsonData};
                 setTimeout(()=>{dialog.setBusy(false)},100);
-                clientService.saveForm(params,(resp,error)=>{
+                clientService.saveForm(jsonData,method,(resp,error)=>{
                            if (error){
-                               console.log(error)
+                               console.error(error)
                            }else{
                                console.log(resp.data.formNumber)  ;
                                store.formNo =   resp.data.formNumber;
-                               clientService.uploadFile(jsonData.data.formNumber, 'both');
+                               uploadFile(jsonData.formNumber, 'both');
                            }
                 })
-/*                $.post("server/formService.php?", JSON.stringify(params), (data, status) => {
-                    this.dialog.setBusy(false);
-                    let jsonData = JSON.parse(data);
-                    this.store.formNo = jsonData.data.formNumber;
-                    this.server.uploadFile(jsonData.data.formNumber, 'both');
-                    $("body").scrollTop(0);
 
-                });*/
             }
         }
      };
+     const  upload=(formNo:string,type:string) => {
+        const file = document.querySelector('#admissionLetter') as HTMLInputElement;
+        if (file && file.files && file.files.length > 0) {
+            clientService.uploadFile(formNo, file,type, (resp, error) => {
+                if (error) {
+                    console.error(error)
+                } else { 
+                    console.log(resp)
+                }
+            });
+        }
+        dialog.hideDialog();
+    }
+
+     const uploadFile=(formNo:string, type:string)=>{
+        if (type === 'letter') {
+            // this.uploadAdmissionLetter(formNumber)
+        }
+        else if (type === 'passport') {
+            // this.uploadPassportSizedPhoto(formNumber)
+        }
+        else if (type === 'both') {
+            // let dlg: any = this.uploadAdmissionLetter(formNumber);
+            // dlg.options.onhidden = () => {
+            //     this.uploadPassportSizedPhoto(formNumber, true);
+            // };
+            dialog.showDialog(
+                "Upload Letter of Admission",
+                <div>
+                    Your application has been saved. Please click <b>Choose File</b> to load a copy of your letter of admission.
+                    If you do not currently have letter of admission, click <b>Cancel</b> to continue.
+                    <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
+                </div>,
+                [
+
+                    <button key={2} className="btn btn-danger" onClick={() => {
+                        dialog.hideDialog();
+                    }}>Cancel</button>,
+                    <button key={1} className="btn btn-primary" onClick={()=>{
+                        upload(formNo,"letter")
+                    }
+                    }>Upload</button>
+                ]
+            )
+   
+
+        }
+    };
     return <form id={'form'}>
             <button id="closeView" className="btn btn-danger float-end btn-sm" title="Close" style={{margin: 30}} onClick={closeView}>X</button>
 
@@ -114,8 +173,12 @@ export const FormView = () => {
                         {store.year} Scholarship Form
                     </div>
                     <div className="panel-body">
-                        <div className="label-info" style={{textAlign: "center", fontSize: 16}}>
-                            Personal Information
+                        <div className="label-info" style={{ fontSize: 16}}>
+                            Personal Information 
+                            <span style={{float: "right"}}>
+                            {store.formNo ? "Form Number: " + store.formNo : ""}
+                            </span>
+                            
                         </div>
                         <hr/>
                         <div className="row">
@@ -123,7 +186,7 @@ export const FormView = () => {
                                 First Name :
                             </div>
                             <div className="col-sm-10">
-                                <input type="text" name="firstName"
+                                <input type="text" name="firstName" 
                                        className="form-control input-sm"/>
                             </div>
 
@@ -343,4 +406,4 @@ export const FormView = () => {
 
 
         </form>;
-};
+}

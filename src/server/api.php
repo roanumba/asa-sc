@@ -2,8 +2,8 @@
 include 'dbConnection.php';
 
 include 'clientHandler.php';
-include 'formService.php';
+// include 'formService.php';
 
 function calc($params) {
-   return array("query"=>$params['k']) ;
+   return array("query"=>$params['id']) ;
 }

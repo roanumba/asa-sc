@@ -5,6 +5,7 @@ import {useHistory} from "react-router-dom";
 import {store} from "../services/storeService";
 import {dialog} from "../services/DialogService";
 import {clientService, get} from "../services/ServerService";
+import { uploadLetterOfAdmision,uploadPassportSizedPhoto } from "./FileUpload";
 
 
 
@@ -13,18 +14,19 @@ export const InitialPage = () => {
 
     const history = useHistory();
 
-    let formNo: any;
+    const [formNo, setFormNo] = React.useState<string>("");
 
     useEffect(() => {
+        store.clearForm();
          dialog.setBusy(true);
-         get(`/api.php?id=266`).then((d)=>{
-             console.log(`====== ${d}`)
-         }).catch((e)=>{
-             console.error(e)
-         })
+        //  get(`/api.php?id=266`).then((d)=>{
+        //      console.log(`====== ${JSON.stringify(d, null, 2)}`)
+        //  }).catch((e)=>{
+        //      console.error(e)
+        //  })
          setTimeout(()=>{
              dialog.setBusy(false)
-         },1000)
+         },100)
     }, []);
     
 /*    const dialog: DialogService;
@@ -63,59 +65,120 @@ export const InitialPage = () => {
 
      */
 
-    const  editForm=() =>{
-              if (formNo) {
+    // const  editForm=() =>{
+    //           if (formNo) {
 
-                  findForm(formNo, (jsonData) => {
-                      store.formData = jsonData.data;
-                      store.formNo = formNo;
-                      router.navigate(['formViewPage']);
-                  });
+    //               findForm(formNo, (jsonData) => {
+    //                   store.formData = jsonData.data;
+    //                   store.formNo = formNo;
+    //                   router.navigate(['formViewPage']);
+    //               });
 
-              }
-              else {
-                  dialog.showErrorDialog("Form Error",
-                      "'Form Number' is required to edit existing form"
-                  );
+    //           }
+    //           else {
+    //               dialog.showErrorDialog("Form Error",
+    //                   "'Form Number' is required to edit existing form"
+    //               );
 
-              }
-          }
+    //           }
+    //       }
           
        const newForm=()=> {
-           store.formData = [];
+           store.formData = {};
            store.formNo = '';
            history.push('/formViewPage');
        }
 
- /*      const uploadLetter=()=> {
-           if (formNo) {
-               findForm(formNo, () => {
-                   server.uploadFile(formNo,'letter');
-                   formNo='';
-               });
-           }
-           else {
-               dialog.showErrorDialog("Form Error",
-                   "'Form Number' is required to upload letter of admission."
-               );
+       const findForm=(formNo:string)=>{
+            return new Promise((resolve, reject) => {
+                clientService.findform(formNo, (jsonData, error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (jsonData.data) {
+                            resolve(jsonData.data);
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                })
 
-           }
-       }
 
-       const uploadPhoto=()=> {
-           if (formNo) {
-               findForm(formNo, () => {
-                   server.uploadFile(formNo,'passport');
-                   formNo='';
-               });
-           }
-           else {
-               dialog.showErrorDialog("Form Error",
-                   "'Form Number' is required to upload passport sized photo."
-               );
+            })
+         }
 
-           }
-       }*/
+    const editForm= async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) =>{
+        if (formNo) {
+ 
+            try {
+                const jsonData:any= await findForm(formNo);
+                if (jsonData) {
+                    store.formData = jsonData;
+                    store.formNo = formNo;
+                    history.push("/formViewPage");
+                }
+                else {
+                    dialog.showErrorDialog(
+                        "Form Error",
+                        "No form found with number: '" + formNo + "'."
+                    );
+                }
+            } catch (error) {
+                dialog.showErrorDialog(
+                    "Form Error",
+                    `No form found with number: '${formNo}'.`
+                );                
+            }
+
+
+        } else {
+            dialog.showErrorDialog(
+                "Form Error",
+                "'Form Number' is required to edit existing form"
+            );
+        }
+    }
+    const uploadPhoto=async(event: React.MouseEvent<HTMLButtonElement, MouseEvent>)=> {
+
+        if (formNo) {
+            const data=await findForm(formNo)
+            if (!data) {
+                dialog.showErrorDialog(
+                    "Form Error",
+                    `No form found with number: '${formNo}'.`
+                );
+                return;
+            }
+            uploadPassportSizedPhoto(formNo);
+
+        } else {
+            dialog.showErrorDialog(
+                "Form Error",
+                "'Form Number' is required to upload passport sized photo"
+            );
+        }
+    }
+    const uploadLetter=async(event: React.MouseEvent<HTMLButtonElement, MouseEvent>)=> {
+        if (formNo) {
+            const data=await findForm(formNo)
+            if (!data) {
+                dialog.showErrorDialog(
+                    "Form Error",
+                    `No form found with number: '${formNo}'.`
+                );
+                return;
+            }
+            uploadLetterOfAdmision(formNo);
+
+        } else {
+            dialog.showErrorDialog(
+                "Form Error",
+                "'Form Number' is required to upload admission letter"
+            );
+        }
+    }
+
 
     return <div style={{
         minHeight: "100vh",  /*These two lines are counted as one :-)       */
@@ -155,24 +218,25 @@ export const InitialPage = () => {
             Edit Completed Form/Upload Admission Letter.<br/>
             <Row>
                 <Col sm={{offset:4,span:4}}>
-                    <input className="form-control" id="formNumber" placeholder="Form Number"
-                    />
+                    <input className="form-control" id="formNumber" placeholder="Form Number" onChange={(e)=>{
+                        setFormNo(e.target.value);                                  
+                    }} />
                 </Col>
             </Row>
             <Row style={{marginTop:5}}>
                 <Col sm={{span: 4}}>
-                    <Button variant={"info"} size="sm" id="editForm">
+                    <Button variant={"info"} size="sm" id="editForm" onClick={editForm}>
                         Edit  Completed Form
                     </Button>
                 </Col>
 
                 <Col sm={{ span: 4}}>
-                    <Button variant={"success"} size="sm" id="uploadPhoto">
+                    <Button variant={"success"} size="sm" id="uploadPhoto" onClick={uploadPhoto}>
                         Upload Passport sized Photo
                     </Button>
                 </Col>
                 <Col sm={{ span: 4}}>
-                    <Button variant={"warning"} size="sm" id="uploadLetter">
+                    <Button variant={"warning"} size="sm" id="uploadLetter" onClick={uploadLetter}>
                         Upload Admission Letter
                     </Button>
                 </Col>

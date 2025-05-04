@@ -151,7 +151,3 @@ function findFormByFormNumber($params)
     }
 }
 
-function uploadAdmissionLetter()
-{
-
-}

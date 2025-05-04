@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "echo",
+			"type": "shell",
+			"command": "echo Hello"
+		},
+		{
+			"type": "npm",
+			"script": "build-deploy",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build-deploy",
+			"presentation": {
+				"reveal": "silent"
+			}
+		}
+	]
+}
