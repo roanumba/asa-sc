@@ -11,6 +11,8 @@ export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
         const resp = await fetch(`${apiUrl}${path}`, init);
         if (resp.ok) {
             data = await resp.json();
+        }else {
+           throw new Error(`Error: ${resp.status} ${resp.statusText}`);
         }
         console.log(`fetching: ${path}`);
         return data;
@@ -199,41 +201,6 @@ export class ServerService {
         dialog.setBusy(false);
     }
 
-    // private uploadAdmissionLetter(formNumber: string, lastPage = false) {
-    //     let msgFunc = function (dialog) {
-
-    //         let msg = `<div>
-    //           Your application has been save. Please click <b>Choose File</b> to load a copy of your letter of admission. 
-    //           If you do not currently have letter of admission, click <b>Cancel</b> to continue.
-    //           <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
-    //           </div>`;
-    //         msg.find("#admissionLetter").change((e) => {
-    //             if (this.files.length > 0) {
-    //                 klass.uploadToSever(this.files[0], formNumber, 'letter', dialog);
-    //             }
-    //         });
-    //         return msg;
-    //     };
-    //     return this.showLastPage(msgFunc, 'letter', lastPage);
-    // }
-
-    // private uploadPassportSizedPhoto(formNumber:string, lastPage?) {
-    //     let msgFunc = function (dialog) {
-
-    //         let msg = $(`<div>
-    //           Your application has been save. Please click <b>Choose File</b> to load your passport sized photo. 
-    //           If you do not currently have your passport sized photo, click <b>Cancel</b> to continue.
-    //           <input type="file" id="passport" accept="image/!*"/>
-    //           </div>`);
-    //         msg.find("#passport").change(function (e) {
-    //             if (this.files.length > 0) {
-    //                 klass.uploadToSever(this.files[0], formNumber, 'passport', dialog);
-    //             }
-    //         });
-    //         return msg;
-    //     };
-    //     return this.showLastPage(msgFunc, 'passport', lastPage);
-    // }
 
 }
 

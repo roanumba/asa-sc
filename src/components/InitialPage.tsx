@@ -19,69 +19,13 @@ export const InitialPage = () => {
     useEffect(() => {
         store.clearForm();
          dialog.setBusy(true);
-        //  get(`/api.php?id=266`).then((d)=>{
-        //      console.log(`====== ${JSON.stringify(d, null, 2)}`)
-        //  }).catch((e)=>{
-        //      console.error(e)
-        //  })
+
          setTimeout(()=>{
              dialog.setBusy(false)
          },100)
     }, []);
     
-/*    const dialog: DialogService;
-    const server: ServerService;
-    const router: Router;
-    const store: StoreService;
-    
-    const findForm=(formNo:number, callback:(d:any)=>void)=> {
-          //dialog.setBusy(true);
 
-           const params = {method: "findFormByFormNumber", params: {formNumber: formNo}};
-           $.post("server/formService.php?", JSON.stringify(params), (data, status) => {
-               try {
-                   const jsonData = JSON.parse(data);
-                   if (jsonData.data) {
-                       callback(jsonData);
-
-                   }
-                   else {
-                       dialog.showErrorDialog("Form Error",
-                           "No form found with number: '" + formNo + "'."
-                       );
-
-                   }
-               }
-               catch (ex) {
-                   dialog.showErrorDialog("Form Error",
-                       "Server Error please try again later."
-                   );
-
-               }
-               dialog.setBusy(false);
-
-           });
-       };
-
-     */
-
-    // const  editForm=() =>{
-    //           if (formNo) {
-
-    //               findForm(formNo, (jsonData) => {
-    //                   store.formData = jsonData.data;
-    //                   store.formNo = formNo;
-    //                   router.navigate(['formViewPage']);
-    //               });
-
-    //           }
-    //           else {
-    //               dialog.showErrorDialog("Form Error",
-    //                   "'Form Number' is required to edit existing form"
-    //               );
-
-    //           }
-    //       }
           
        const newForm=()=> {
            store.formData = {};

@@ -8,8 +8,8 @@ function getConnection() {
     $user = 'root';
     $pass = 'root';
     $db = 'asa_sc';
-    // $port = '8889';
-    $con = mysqli_connect($dbhost, $user, $pass, $db);
+    $port = '8889';
+    $con = mysqli_connect($dbhost, $user, $pass, $db, $port);
     return $con;
 }
 ?>

@@ -6,11 +6,13 @@ import {Col, Row} from "react-bootstrap";
 import {BusySpinner} from "../index";
 import {dialog} from "../services/DialogService";
 import {clientService} from "../services/ServerService";
+import { uploadLetterOfAdmision, uploadPassportSizedPhoto } from './FileUpload';
 
 
 export const FormView = () => {
     const history=useHistory() ;
     const [submitDisabled, setSubmitDisabled] = useState(true);
+    const [formNo, setFormNo] = React.useState<string>("");
     useEffect(() => {
         const form = document.querySelector('#form');
      
@@ -21,6 +23,7 @@ export const FormView = () => {
                     //assign values to controls
                     v.value=store.formData[v.name];
                 });
+                setFormNo(store.formNo);
             }
         } else {
             if (form) {
@@ -99,58 +102,31 @@ export const FormView = () => {
                            }else{
                                console.log(resp.data.formNumber)  ;
                                store.formNo =   resp.data.formNumber;
-                               uploadFile(jsonData.formNumber, 'both');
+                                 setFormNo(resp.data.formNumber);
+                               uploadFile(jsonData.formNumber, 'letter');
                            }
                 })
 
             }
         }
      };
-     const  upload=(formNo:string,type:string) => {
-        const file = document.querySelector('#admissionLetter') as HTMLInputElement;
-        if (file && file.files && file.files.length > 0) {
-            clientService.uploadFile(formNo, file,type, (resp, error) => {
-                if (error) {
-                    console.error(error)
-                } else { 
-                    console.log(resp)
-                }
-            });
-        }
-        dialog.hideDialog();
-    }
 
      const uploadFile=(formNo:string, type:string)=>{
         if (type === 'letter') {
             // this.uploadAdmissionLetter(formNumber)
+            uploadLetterOfAdmision(formNo);
         }
         else if (type === 'passport') {
             // this.uploadPassportSizedPhoto(formNumber)
+            uploadPassportSizedPhoto(formNo);
         }
         else if (type === 'both') {
             // let dlg: any = this.uploadAdmissionLetter(formNumber);
             // dlg.options.onhidden = () => {
             //     this.uploadPassportSizedPhoto(formNumber, true);
             // };
-            dialog.showDialog(
-                "Upload Letter of Admission",
-                <div>
-                    Your application has been saved. Please click <b>Choose File</b> to load a copy of your letter of admission.
-                    If you do not currently have letter of admission, click <b>Cancel</b> to continue.
-                    <input type="file" id="admissionLetter" accept="image/!*,application/pdf"/>
-                </div>,
-                [
 
-                    <button key={2} className="btn btn-danger" onClick={() => {
-                        dialog.hideDialog();
-                    }}>Cancel</button>,
-                    <button key={1} className="btn btn-primary" onClick={()=>{
-                        upload(formNo,"letter")
-                    }
-                    }>Upload</button>
-                ]
-            )
-   
+            uploadLetterOfAdmision(formNo);
 
         }
     };
@@ -176,7 +152,7 @@ export const FormView = () => {
                         <div className="label-info" style={{ fontSize: 16}}>
                             Personal Information 
                             <span style={{float: "right"}}>
-                            {store.formNo ? "Form Number: " + store.formNo : ""}
+                            {formNo ? "Form Number: " + formNo : ""}
                             </span>
                             
                         </div>

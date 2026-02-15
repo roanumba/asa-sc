@@ -15,7 +15,8 @@ export const BusySpinner ={
 
 export const StaticDialog ={
     show:(params:any)=>{},
-    hide:()=>{}
+    hide:()=>{},
+    onClose:(cb:()=>void)=>{}
 
 }
 const root = ReactDOM.createRoot(
