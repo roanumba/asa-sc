@@ -88,14 +88,14 @@ export const FormView = () => {
                     history.push('/lastViewPage');
                 }}>Cancel</Button>
                 <Button onClick={() => {
-                    uploadFile(formNumber,'passports',(resp,error)=>{
+                    uploadFile(formNumber,'passport',(resp,error)=>{
                         if (error){
                             toastBar.error('Error uploading passport sized photo');
                             return;
                         }
                         dialog.hideDialog();
                         history.push('/lastViewPage');
-                    });                    
+                    });
                 }}>Upload</Button>
             </>);
     }
@@ -383,7 +383,7 @@ export const FormView = () => {
                                 Personal Profile:
                             </div>
                             <div className="col-sm-10">
-                                <textarea className="form-control col-sm-10" rows={3} maxLength={1000} id="profile" name="profile"/>
+                                <textarea className="form-control col-sm-10" rows={10} maxLength={1000} id="profile" name="profile"/>
                             </div>
                         </div>
                         <div className="row">

@@ -25,6 +25,8 @@ function getFieds()
         'timeStamp',
         'profile',
         'formNumber',
+        'admissionLetter',
+        'passport',
     );
 }
 
@@ -39,12 +41,22 @@ function submitForm($param)
 
         $con = getConnection();
 
-        $sql = 'Insert into scholarship (' . implode(", ", getFieds()) . ') value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+        $sql = 'Insert into scholarship (' . implode(", ", getFieds()) . ') value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
         $stmt = mysqli_prepare($con, $sql);
+
+        if (!$stmt) {
+            $error = mysqli_error($con);
+            error_log("Failed to prepare statement: " . $error);
+            throw new Exception("Database prepare error: " . $error);
+        }
+
         $formNumber = strtoupper(uniqid('', false));
         $createdDate = date("Y-m-d H:i:s");
-        mysqli_stmt_bind_param($stmt, "ssssissssssssssssss",
+        $emptyAdmissionLetter = '';
+        $emptyPassport = '';
+
+        $bindResult = mysqli_stmt_bind_param($stmt, "ssssissssssssssssssss",
             $param->firstName,
             $param->middleName,
             $param->lastName,
@@ -61,12 +73,26 @@ function submitForm($param)
             $param->collegeName,
             $param->collegeAddress,
             $param->studentMajor,
-            $createdDate, 
+            $createdDate,
             $param->profile,
-            $formNumber
+            $formNumber,
+            $emptyAdmissionLetter,
+            $emptyPassport
         );
 
-        mysqli_stmt_execute($stmt);
+        if (!$bindResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to bind parameters: " . $error);
+            throw new Exception("Parameter binding error: " . $error);
+        }
+
+        $execResult = mysqli_stmt_execute($stmt);
+
+        if (!$execResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to execute statement: " . $error);
+            throw new Exception("Execution error: " . $error);
+        }
 
         mysqli_stmt_close($stmt);
 
@@ -74,8 +100,9 @@ function submitForm($param)
         return array("formNumber" => $formNumber);
     } catch (Exception $exc) {
         $error = $exc->getMessage();
+        error_log("Form submission exception: " . $error);
         // return array('error' => TRUE, 'errorMsg' => $error);
-        throw new Exception("Unknown system error during form submission");
+        throw $exc;
     }
 }
 
@@ -87,7 +114,9 @@ function updateRecord($param)
 
         $sql = 'update scholarship set ';
         $flds = getFieds();
-        for ($idx = 0; $idx < count($flds) - 1; $idx++) {
+        // Build SET clause for all fields except the last 3 (formNumber, admissionLetter, passport)
+        // We don't update admissionLetter and passport here - they're updated via fileUpload.php
+        for ($idx = 0; $idx < count($flds) - 3; $idx++) {
             if ($idx == 0) {
                 $sql .= $flds[$idx] . '=?';
             } else {
@@ -98,8 +127,16 @@ function updateRecord($param)
         $sql .= ' where formNumber=?';
 
         $stmt = mysqli_prepare($con, $sql);
+
+        if (!$stmt) {
+            $error = mysqli_error($con);
+            error_log("Failed to prepare update statement: " . $error);
+            throw new Exception("Database prepare error: " . $error);
+        }
+
         $createdTime = date("Y-m-d H:i:s");
-        mysqli_stmt_bind_param($stmt, "ssssissssssssssssss",
+
+        $bindResult = mysqli_stmt_bind_param($stmt, "ssssissssssssssssss",
             $param->firstName,
             $param->middleName,
             $param->lastName,
@@ -121,7 +158,19 @@ function updateRecord($param)
             $param->formNumber
         );
 
-        mysqli_stmt_execute($stmt);
+        if (!$bindResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to bind update parameters: " . $error);
+            throw new Exception("Parameter binding error: " . $error);
+        }
+
+        $execResult = mysqli_stmt_execute($stmt);
+
+        if (!$execResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to execute update statement: " . $error);
+            throw new Exception("Execution error: " . $error);
+        }
 
         mysqli_stmt_close($stmt);
 
@@ -129,8 +178,9 @@ function updateRecord($param)
         return array("formNumber" => $param->formNumber);
     } catch (Exception $exc) {
         $error = $exc->getMessage();
+        error_log("Form update exception: " . $error);
         // return array('error' => TRUE, 'errorMsg' => $error);
-        throw new Exception("Unknown system error during form update");
+        throw $exc;
     }
 }
 

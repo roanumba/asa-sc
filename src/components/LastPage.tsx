@@ -40,23 +40,33 @@ export const LastPage = () => {
                 toastBar.error("Error: " + mailError);
             }
             setDataRows(dataRows);
-            let msg = "";
+            let msgElement = null;
             if (noAdmissionLetter && noPassportPhoto) {
-                msg = `You have not uploaded your <b>admission letter</b> and <b>passport photo</b>.`
+                msgElement = <>
+                    You have not uploaded your <b>admission letter</b> and <b>passport photo</b>.
+                    {' '}Please go back to <br/>
+                    <a href="index.html">{store.year} ASA-SC & ASWA-SC Scholarship form</a> <br/>
+                    whenever they are available, and use your form number <b>{formNo}</b> to upload them by {store.deadline}.
+                </>
             }
             else if (noAdmissionLetter) {
-                msg = `You have not uploaded your <b>admission letter</b>.`
-
+                msgElement = <>
+                    You have not uploaded your <b>admission letter</b>.
+                    {' '}Please go back to <br/>
+                    <a href="index.html">{store.year} ASA-SC & ASWA-SC Scholarship form</a> <br/>
+                    whenever they are available, and use your form number <b>{formNo}</b> to upload them by {store.deadline}.
+                </>
             }
             else if (noPassportPhoto) {
-                msg = `You have not uploaded your <b>passport photo</b>.`
-
+                msgElement = <>
+                    You have not uploaded your <b>passport photo</b>.
+                    {' '}Please go back to <br/>
+                    <a href="index.html">{store.year} ASA-SC & ASWA-SC Scholarship form</a> <br/>
+                    whenever they are available, and use your form number <b>{formNo}</b> to upload them by {store.deadline}.
+                </>
             }
-            if (msg) {
-                msg += ` Please go back to <br/>
-                        <a href="index.html">${store.year} ASA-SC & ASWA-SC Scholarship form </a> <br/>
-                        whenever they are available, and use your form number <b>${formNo}</b> to upload them by ${store.deadline}.`
-                dialog.showErrorDialog("Upload Error",<>{msg}</>);
+            if (msgElement) {
+                dialog.showErrorDialog("Upload Error", msgElement);
             }
 
         });
