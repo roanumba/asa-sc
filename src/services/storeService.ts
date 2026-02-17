@@ -1,14 +1,17 @@
-import moment from "moment";
-import { Moment } from "moment";
+import dayjs, { Dayjs } from "dayjs";
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 import {  fetchWithoutToken } from "./ServerService";
 import { toastBar } from "..";
+
+// Enable localized format plugin for LL format
+dayjs.extend(localizedFormat);
 
 
 export class StoreService {
     OPENING_DATE = "2016-05-31";
     CLOSING_DATE = "2016-06-30";
-    momentDeadLineDate = moment();
+    deadLineDate = dayjs();
     deadline = '';
     year = 0;
  
@@ -29,9 +32,9 @@ export class StoreService {
             console.log(error);
             toastBar.error("Error loading config");
         }finally{
-            this.momentDeadLineDate = moment(this.CLOSING_DATE, 'YYYY-MM-DD');
-            this.deadline = this.momentDeadLineDate.format('LL');
-            this.year = this.momentDeadLineDate.year();
+            this.deadLineDate = dayjs(this.CLOSING_DATE, 'YYYY-MM-DD');
+            this.deadline = this.deadLineDate.format('LL');
+            this.year = this.deadLineDate.year();
         }
     }
     //load config from server
@@ -46,8 +49,8 @@ export class StoreService {
     set formData(value: any[]) {
         this._formData = value;
     }
-    isOverDeadLine(date: Moment): boolean {
-        return date.isAfter(this.momentDeadLineDate);
+    isOverDeadLine(date: Dayjs): boolean {
+        return date.isAfter(this.deadLineDate);
     }
 
 }

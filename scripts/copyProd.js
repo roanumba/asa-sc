@@ -1,7 +1,14 @@
-const fs = require("fs-extra");
+import fs from "fs-extra";
 
-if (fs.existsSync("C:/projects/react/asa/build")) {
-    fs.removeSync("C:/xampp/htdocs/asa-aswa");
-    fs.copySync("C:/projects/react/asa/build", "C:/xampp/htdocs/asa-aswa");
-    fs.copySync("C:/projects/react/asa/src/server", "C:/xampp/htdocs/asa-aswa/server");
+const path = '/Applications/MAMP/htdocs';
+const project = '.';
+// passed as an argument to the script, e.g. `node copyProd.js <root-page>` defalts to `asa-aswa`
+const target = `${path}/${process.argv[2] || 'asa-aswa'}`;
+
+if (fs.existsSync(`${project}/build`)) {
+    fs.removeSync(target);
+    fs.copySync(`${project}/build`, target);
+    fs.copySync(`${project}/src/server`, `${target}/server`);
+    //log completion message
+    console.log(`Production build copied successfully from ${project}/build to ${target}!`);
 }

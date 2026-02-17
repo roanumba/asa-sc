@@ -1,11 +1,15 @@
 import React from "react";
 
 import { Col, Row } from "react-bootstrap";
-import moment from "moment";
+import dayjs from "dayjs";
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 import { store } from "../";
 
+// Enable localized format plugin for LL format
+dayjs.extend(localizedFormat);
+
 export const OpeningPage = () => {
-    const date = moment(store.OPENING_DATE).format("LL");
+    const date = dayjs(store.OPENING_DATE).format("LL");
     return <div style={{
         // minHeight: "100vh",  
         display: " flex",

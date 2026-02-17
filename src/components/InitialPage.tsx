@@ -38,11 +38,12 @@ export const InitialPage = () => {
 
     useEffect(() => {
          dialog.setBusy(true);
-         get(`/api.php?id=266`).then((d)=>{
-             console.log(`====== ${JSON.stringify(d)}`)
-         }).catch((e)=>{
-             console.error(e)
-         })
+         // Debug/test code - commented out
+         // get(`/api.php?id=266`).then((d)=>{
+         //     console.log(`====== ${JSON.stringify(d)}`)
+         // }).catch((e)=>{
+         //     console.error(e)
+         // })
          setTimeout(()=>{
              dialog.setBusy(false)
          },1000)
