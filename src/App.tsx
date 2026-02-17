@@ -18,7 +18,9 @@ import { RouteHome } from "./components/RouteHome";
 import { ClosedPage } from "./components/ClosedPage";
 import { OpeningPage } from "./components/OpeningPage";
 
-const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
+// Get basename from <base> tag and remove trailing slash for React Router
+const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+const baseName = baseHref.replace(/\/$/, '') || '/';
 
 // export const history = createBrowserHistory();
 /*export const navigateTo=(path:string,state?:any)=>{
