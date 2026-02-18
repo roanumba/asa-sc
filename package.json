@@ -2,7 +2,7 @@
   "name": "asa",
   "version": "0.1.0",
   "type": "module",
-  "homepage": "./",
+  "homepage": "/asa-aswa/",
   "private": true,
   "scripts": {
     "clean": "rm -rf node_modules build pnpm-lock.yaml",

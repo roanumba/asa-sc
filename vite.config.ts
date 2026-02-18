@@ -6,7 +6,7 @@ import path from 'path'
 const replacePublicUrl = (): Plugin => ({
   name: 'replace-public-url',
   transformIndexHtml(html, ctx) {
-    const base = ctx.server?.config.base || './'
+    const base = ctx.server?.config.base || '/asa-aswa/';
     return html.replace(/%PUBLIC_URL%/g, base.replace(/\/$/, ''))
   },
 })
@@ -17,7 +17,7 @@ export default defineConfig({
     react(),
     replacePublicUrl(),
   ],
-  base: './',
+  base: '/asa-aswa/',
   server: {
     port: 3000,
     open: true,

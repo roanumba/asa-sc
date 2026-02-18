@@ -6,6 +6,8 @@ import {Button, Col, Row} from "react-bootstrap";
 import {BusySpinner, toastBar} from "../index";
 import {dialog} from "../services/DialogService";
 import { saveForm, uploadFile} from "../services/ServerService";
+import {getTownsForLGA, lgaList} from "../services/storeService";
+import { get } from 'http';
 
 
 
@@ -13,6 +15,7 @@ import { saveForm, uploadFile} from "../services/ServerService";
 export const FormView = () => {
     const history=useHistory() ;
     const [submitDisabled, setSubmitDisabled] = useState(true);
+    const [towns, setTowns] = useState([] as string[]);
     useEffect(() => {
          BusySpinner.setBusy(true);
          setTimeout(()=>{
@@ -293,42 +296,32 @@ export const FormView = () => {
                         <div className="row">
 
                             <div className="asa-label col-sm-2">
-                                Home Town :
-                            </div>
-                            <div className="col-sm-4">
-                                <input type="text" name="homeTown"
-                                       className="form-control input-sm"/>
-                            </div>
-                            <div className="asa-label col-sm-2">
                                 LGA :
                             </div>
                             <div className="col-sm-4">
-                                <select className="form-control input-sm" name="lga">
+                                <select className="form-control input-sm" name="lga" onChange={(e)=>{
+                                    const selectedLga = e.target.value;
+                                    const towns = getTownsForLGA(selectedLga);
+                                    setTowns(towns);
+                                }}>
                                     <option> </option>
-                                    {/* <option>Aguata</option> */}
-                                    <option>Aguata</option>
-                                    <option>Awka North</option>
-                                    <option>Awka South</option>
-                                    <option>Anambra East</option>
-                                    <option>Anambra West</option>
-                                    <option>Anaocha</option>
-                                    <option>Ayamelum</option>
-                                    <option>Dunukofia</option>
-                                    <option>Ekwusigo</option>
-                                    <option>Idemili North</option>
-                                    <option>Idemili South</option>
-                                    <option>Ihiala</option>
-                                    <option>Njikoka</option>
-                                    <option>Nnewi North</option>
-                                    <option>Nnewi South</option>
-                                    <option>Ogbaru</option>
-                                    <option>Onitsha North</option>
-                                    <option>Onitsha South</option>
-                                    <option>Orumba North</option>
-                                    <option>Orumba South</option>
-                                    <option>Oyi</option>
+                                    {lgaList.map((lga:any,index:number)=>{
+                                        return <option key={index}>{lga}</option>
+                                    })}
                                 </select>
 
+                            </div>
+
+                            <div className="asa-label col-sm-2">
+                                Home Town :
+                            </div>
+                            <div className="col-sm-4">
+                                <select className="form-control input-sm" name="homeTown" disabled={towns.length===0}>
+                                    <option> </option>
+                                    {towns.map((town, index) => (
+                                        <option key={index}>{town}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -383,7 +376,10 @@ export const FormView = () => {
                                 Personal Profile:
                             </div>
                             <div className="col-sm-10">
-                                <textarea className="form-control col-sm-10" rows={10} maxLength={1000} id="profile" name="profile"/>
+                                <textarea className="form-control col-sm-10" 
+                                rows={10} maxLength={1000} id="profile" name="profile"
+                                style={{height: "50px"}} placeholder="Maximum of 1000 characters. Please be concise and to the point."
+                                />
                             </div>
                         </div>
                         <div className="row">
@@ -396,10 +392,10 @@ export const FormView = () => {
                                 some later date. I understand that, if selected for a scholarship,
                                 you may use my name, photograph and/or testimonial for promotion
                                 and public relations purposes.
-                                <div className="float-end">
-                                    <b>Agree</b>
+                                <div className="float-end" >
+                                    <b style={{marginRight: 20}}>Agree</b>
                                     <input type="checkbox" id="agreed" name="aggreed" onChange={(e)=>{
-                                        setSubmitDisabled(!e.target.checked)}}/>
+                                        setSubmitDisabled(!e.target.checked)}} className='input-md'/>
                                 </div>
                             </div>
                         </div>
