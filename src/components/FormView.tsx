@@ -8,12 +8,8 @@ import { dialog } from "../services/DialogService";
 import { saveForm } from "../services/ServerService";
 import { getTownsForLGA, lgaList } from "../services/storeService";
 import { get } from 'http';
-
-// Get API base URL from <base> tag
-const getApiUrl = () => {
-    const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
-    return `${baseName}server`;
-};
+import { isEmail } from "../utils/validation";
+import { getApiUrl } from "../utils/formHelpers";
 
 
 
@@ -22,6 +18,40 @@ export const FormView = () => {
     const [submitDisabled, setSubmitDisabled] = useState(true);
     const [towns, setTowns] = useState([] as string[]);
 
+    // Phase 2 Group A: Form state for simple text fields
+    const [firstName, setFirstName] = useState('');
+    const [middleName, setMiddleName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [studentId, setStudentId] = useState('');
+    const [collegeName, setCollegeName] = useState('');
+    const [studentMajor, setStudentMajor] = useState('');
+
+    // Phase 2 Group B: Form state for complex fields
+    const [gender, setGender] = useState('');
+    const [age, setAge] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [email, setEmail] = useState('');
+    const [address, setAddress] = useState('');
+    const [parentNames, setParentNames] = useState('');
+    const [admissionDate, setAdmissionDate] = useState('');
+    const [collegeAddress, setCollegeAddress] = useState('');
+    const [profile, setProfile] = useState('');
+
+    // Phase 2 Group C: Cascade dropdowns and checkbox
+    const [lga, setLga] = useState('');
+    const [homeTown, setHomeTown] = useState('');
+    const [agreed, setAgreed] = useState(false);
+
+    // Phase 2 Group C: New LGA change handler (eliminates setTimeout hack)
+    const handleLgaChange = (selectedLga: string) => {
+        setLga(selectedLga);
+        const newTowns = getTownsForLGA(selectedLga);
+        setTowns(newTowns);
+        // Reset homeTown when LGA changes (no setTimeout needed!)
+        setHomeTown('');
+    };
+
+    // Old functions kept for backward compatibility during migration
     function loadTownsForLGA(selectedLga: string) {
         const towns = getTownsForLGA(selectedLga);
         setTowns(towns);
@@ -65,6 +95,35 @@ export const FormView = () => {
         const formData: any = store.formData;
         console.log(`formData: ${JSON.stringify(formData)}`);
 
+        // Phase 2 Group A: Set controlled component state
+        if (formData.firstName) setFirstName(formData.firstName);
+        if (formData.middleName) setMiddleName(formData.middleName);
+        if (formData.lastName) setLastName(formData.lastName);
+        if (formData.studentId) setStudentId(formData.studentId);
+        if (formData.collegeName) setCollegeName(formData.collegeName);
+        if (formData.studentMajor) setStudentMajor(formData.studentMajor);
+
+        // Phase 2 Group B: Set controlled component state
+        if (formData.gender) setGender(formData.gender);
+        if (formData.age) setAge(formData.age);
+        if (formData.phoneNumber) setPhoneNumber(formData.phoneNumber);
+        if (formData.email) setEmail(formData.email);
+        if (formData.address) setAddress(formData.address);
+        if (formData.parentNames) setParentNames(formData.parentNames);
+        if (formData.admissionDate) setAdmissionDate(formData.admissionDate);
+        if (formData.collegeAddress) setCollegeAddress(formData.collegeAddress);
+        if (formData.profile) setProfile(formData.profile);
+
+        // Phase 2 Group C: Set cascade dropdown state
+        if (formData.lga) {
+            setLga(formData.lga);
+            const towns = getTownsForLGA(formData.lga);
+            setTowns(towns);
+            if (formData.homeTown) {
+                setHomeTown(formData.homeTown);
+            }
+        }
+
         const form = document.querySelector('#form');
         if (form) {
             const arrayData = new FormData(form as HTMLFormElement);
@@ -73,27 +132,21 @@ export const FormView = () => {
                 if (aField) {
                     aField.style.borderColor = ''
                 }
+                // Skip Group A, B, C fields - they're now controlled
+                if (['firstName', 'middleName', 'lastName', 'studentId', 'collegeName', 'studentMajor',
+                     'gender', 'age', 'phoneNumber', 'email', 'address', 'parentNames',
+                     'admissionDate', 'collegeAddress', 'profile', 'lga', 'homeTown', 'aggreed'].includes(key)) {
+                    return;
+                }
                 if (formData[key]) {
                     aField.value = formData[key];
                 }
             });
-
-            // If LGA has a value, load the towns for that LGA
-            if (formData.lga) {
-                loadTownsForLGA(formData.lga);
-
-                // Set homeTown value after towns are loaded
-                // We need to wait for the state to update
-                setHomeTownValue(formData.homeTown);
-            }
         }
 
 
     }
-    function isEmail(email: string) {
-        let emailReg = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[A-Z]{2}|com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum)\b/;
-        return emailReg.test(email);
-    }
+
     const uploadAdmissionLetter = (formNumber: string) => {
         dialog.showDialog('Upload Admission Letter',
             <div>Please click <b>Upload</b> to select and upload your letter of admission.
@@ -215,6 +268,52 @@ export const FormView = () => {
             let jsonData: any = { formNumber: undefined, email: undefined };
             let errorElements = [];
 
+            // Phase 2 Group A: Add controlled component values to jsonData
+            jsonData.firstName = firstName;
+            jsonData.middleName = middleName;
+            jsonData.lastName = lastName;
+            jsonData.studentId = studentId;
+            jsonData.collegeName = collegeName;
+            jsonData.studentMajor = studentMajor;
+
+            // Phase 2 Group B: Add controlled component values to jsonData
+            jsonData.gender = gender;
+            jsonData.age = age;
+            jsonData.phoneNumber = phoneNumber;
+            jsonData.email = email;
+            jsonData.address = address;
+            jsonData.parentNames = parentNames;
+            jsonData.admissionDate = admissionDate;
+            jsonData.collegeAddress = collegeAddress;
+            jsonData.profile = profile;
+
+            // Phase 2 Group C: Add cascade dropdown values to jsonData
+            jsonData.lga = lga;
+            jsonData.homeTown = homeTown;
+            jsonData.aggreed = agreed;
+
+            // Check Group A fields for empty values
+            if (!firstName) errorElements.push('firstName');
+            if (!lastName) errorElements.push('lastName');
+            if (!studentId) errorElements.push('studentId');
+            if (!collegeName) errorElements.push('collegeName');
+            if (!studentMajor) errorElements.push('studentMajor');
+
+            // Check Group B fields for empty values
+            if (!gender) errorElements.push('gender');
+            if (!age) errorElements.push('age');
+            if (!phoneNumber) errorElements.push('phoneNumber');
+            if (!email) errorElements.push('email');
+            if (!address) errorElements.push('address');
+            if (!parentNames) errorElements.push('parentNames');
+            if (!admissionDate) errorElements.push('admissionDate');
+            if (!collegeAddress) errorElements.push('collegeAddress');
+            if (!profile) errorElements.push('profile');
+
+            // Check Group C fields for empty values
+            if (!lga) errorElements.push('lga');
+            if (!homeTown) errorElements.push('homeTown');
+
             // Loop through form elements directly (includes disabled fields)
             const elements = (form as HTMLFormElement).elements;
             for (let i = 0; i < elements.length; i++) {
@@ -222,6 +321,13 @@ export const FormView = () => {
 
                 // Skip elements without a name (like buttons)
                 if (!element.name) continue;
+
+                // Skip all controlled fields (Groups A, B, C) - they're now in React state
+                if (['firstName', 'middleName', 'lastName', 'studentId', 'collegeName', 'studentMajor',
+                     'gender', 'age', 'phoneNumber', 'email', 'address', 'parentNames',
+                     'admissionDate', 'collegeAddress', 'profile', 'lga', 'homeTown', 'aggreed'].includes(element.name)) {
+                    continue;
+                }
 
                 // Reset border color
                 if (element.style) {
@@ -330,6 +436,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-10">
                             <input type="text" name="firstName"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
                                 className="form-control input-sm" />
                         </div>
 
@@ -341,6 +449,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-10">
                             <input type="text" name="middleName"
+                                value={middleName}
+                                onChange={(e) => setMiddleName(e.target.value)}
                                 className="form-control input-sm" />
                         </div>
                     </div>
@@ -350,6 +460,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-10">
                             <input type="text" name="lastName"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
                                 className="form-control input-sm" />
                         </div>
                     </div>
@@ -359,7 +471,9 @@ export const FormView = () => {
                             Gender :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="gender">
+                            <select className="form-control input-sm" name="gender"
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}>
                                 <option></option>
                                 <option>Male</option>
                                 <option>Female</option>
@@ -370,7 +484,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-4">
                             <input type="number" min="15" max="23" name="age"
-
+                                value={age}
+                                onChange={(e) => setAge(e.target.value)}
                                 className="form-control input-sm" />
 
                         </div>
@@ -381,7 +496,9 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-10 controls">
                             <textarea className="form-control col-sm-10" rows={2}
-                                name="address" />
+                                name="address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -391,6 +508,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-4">
                             <input type="tel" name="phoneNumber"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
                                 className="form-control input-sm" />
                         </div>
                         <div className="asa-label col-sm-2">
@@ -398,6 +517,8 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-4">
                             <input type="email" name="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="form-control input-sm"
                                 placeholder="Current email is very important to communicate with you" />
 
@@ -409,7 +530,9 @@ export const FormView = () => {
                         </div>
                         <div className="col-sm-10 controls">
                             <textarea className="form-control col-sm-10" rows={2}
-                                name="parentNames" />
+                                name="parentNames"
+                                value={parentNames}
+                                onChange={(e) => setParentNames(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -418,15 +541,12 @@ export const FormView = () => {
                             LGA :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="lga" onChange={(e) => {
-                                const selectedLga = e.target.value;
-                                loadTownsForLGA(selectedLga);
-                                setHomeTownValue(''); // Clear homeTown value when LGA changes
-
-                            }}>
-                                <option> </option>
+                            <select className="form-control input-sm" name="lga"
+                                value={lga}
+                                onChange={(e) => handleLgaChange(e.target.value)}>
+                                <option value=""> </option>
                                 {lgaList.map((lga: any, index: number) => {
-                                    return <option key={index}>{lga}</option>
+                                    return <option key={index} value={lga}>{lga}</option>
                                 })}
                             </select>
 
@@ -436,10 +556,13 @@ export const FormView = () => {
                             Home Town :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="homeTown" disabled={towns.length === 0}>
-                                <option> </option>
+                            <select className="form-control input-sm" name="homeTown"
+                                value={homeTown}
+                                onChange={(e) => setHomeTown(e.target.value)}
+                                disabled={towns.length === 0}>
+                                <option value=""> </option>
                                 {towns.map((town, index) => (
-                                    <option key={index}>{town}</option>
+                                    <option key={index} value={town}>{town}</option>
                                 ))}
                             </select>
                         </div>
@@ -452,7 +575,9 @@ export const FormView = () => {
                             Student ID :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="studentId" />
+                            <input type="text" className="form-control input-sm" name="studentId"
+                                value={studentId}
+                                onChange={(e) => setStudentId(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -460,7 +585,9 @@ export const FormView = () => {
                             Date of Admission :
                         </div>
                         <div className="col-sm-10 controls">
-                            <input type="date" className="form-control input-sm" name="admissionDate" />
+                            <input type="date" className="form-control input-sm" name="admissionDate"
+                                value={admissionDate}
+                                onChange={(e) => setAdmissionDate(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -468,7 +595,9 @@ export const FormView = () => {
                             Name of College :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="collegeName" />
+                            <input type="text" className="form-control input-sm" name="collegeName"
+                                value={collegeName}
+                                onChange={(e) => setCollegeName(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -476,7 +605,9 @@ export const FormView = () => {
                             Address of College :
                         </div>
                         <div className="col-sm-10">
-                            <textarea className="form-control col-sm-10" rows={2} id="comment" name="collegeAddress" />
+                            <textarea className="form-control col-sm-10" rows={2} id="comment" name="collegeAddress"
+                                value={collegeAddress}
+                                onChange={(e) => setCollegeAddress(e.target.value)} />
                         </div>
                     </div>
                     <div className="row">
@@ -484,7 +615,9 @@ export const FormView = () => {
                             Proposed Major :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="studentMajor" />
+                            <input type="text" className="form-control input-sm" name="studentMajor"
+                                value={studentMajor}
+                                onChange={(e) => setStudentMajor(e.target.value)} />
                         </div>
                     </div>
                     <hr />
@@ -498,6 +631,8 @@ export const FormView = () => {
                         <div className="col-sm-10">
                             <textarea className="form-control col-sm-10"
                                 rows={10} maxLength={1000} id="profile" name="profile"
+                                value={profile}
+                                onChange={(e) => setProfile(e.target.value)}
                                 style={{ height: "50px" }} placeholder="Maximum of 1000 characters. Please be concise and to the point."
                             />
                         </div>
@@ -514,9 +649,13 @@ export const FormView = () => {
                             and public relations purposes.
                             <div className="float-end" >
                                 <b style={{ marginRight: 20 }}>Agree</b>
-                                <input type="checkbox" id="agreed" name="aggreed" onChange={(e) => {
-                                    setSubmitDisabled(!e.target.checked)
-                                }} className='input-md' />
+                                <input type="checkbox" id="agreed" name="aggreed"
+                                    checked={agreed}
+                                    onChange={(e) => {
+                                        setAgreed(e.target.checked);
+                                        setSubmitDisabled(!e.target.checked);
+                                    }}
+                                    className='input-md' />
                             </div>
                         </div>
                     </div>
