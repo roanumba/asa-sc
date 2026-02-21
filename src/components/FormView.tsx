@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { store } from "../";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
-import { BusySpinner, toastBar } from "../index";
+import {  toastBar } from "../index";
 import { dialog } from "../services/DialogService";
 import { saveForm } from "../services/ServerService";
 import { getTownsForLGA, lgaList } from "../services/storeService";
-import { get } from 'http';
 import { isEmail } from "../utils/validation";
 import { getApiUrl } from "../utils/formHelpers";
+import { FormInput, FormTextarea, FormSelect } from "./FormComponents";
 
 
 
@@ -55,7 +55,7 @@ export const FormView = () => {
         setHomeTown('');
     };
 
-    // Get validation CSS class for a field
+    // Helper for manual inline fields that don't use form components
     const getValidationClass = (fieldName: string): string => {
         if (!hasValidated) return '';
         return validationErrors.includes(fieldName) ? 'border-danger' : '';
@@ -311,6 +311,7 @@ export const FormView = () => {
                 })
         }
     };
+
     return <form id={'form'} onSubmit={(e) => e.preventDefault()}>
         <button id="closeView" className="btn btn-danger float-end btn-sm" title="Close" style={{ margin: 30 }} onClick={closeView}>X</button>
 
@@ -334,43 +335,10 @@ export const FormView = () => {
                         Personal Information
                     </div>
                     <hr />
+                    <FormInput label="First Name" fieldName="firstName" value={firstName} setValue={setFirstName} validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormInput label="Middle Name" fieldName="middleName" value={middleName} setValue={setMiddleName} validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormInput label="Last Name" fieldName="lastName" value={lastName} setValue={setLastName} validationErrors={validationErrors} hasValidated={hasValidated} />
                     <div className="row">
-                        <div className="asa-label col-sm-2">
-                            First Name :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" name="firstName"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                className={`form-control input-sm ${getValidationClass('firstName')}`} />
-                        </div>
-
-                    </div>
-
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Middle Name :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" name="middleName"
-                                value={middleName}
-                                onChange={(e) => setMiddleName(e.target.value)}
-                                className={`form-control input-sm ${getValidationClass('middleName')}`} />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Last Name :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" name="lastName"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                className={`form-control input-sm ${getValidationClass('lastName')}`} />
-                        </div>
-                    </div>
-                    <div className="row">
-
                         <div className="asa-label col-sm-2">
                             Gender :
                         </div>
@@ -391,20 +359,9 @@ export const FormView = () => {
                                 value={age}
                                 onChange={(e) => setAge(e.target.value)}
                                 className={`form-control input-sm ${getValidationClass('age')}`} />
-
                         </div>
                     </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Address :
-                        </div>
-                        <div className="col-sm-10 controls">
-                            <textarea className={`form-control col-sm-10 ${getValidationClass('address')}`} rows={2}
-                                name="address"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)} />
-                        </div>
-                    </div>
+                    <FormTextarea label="Address" fieldName="address" value={address} setValue={setAddress} rows={2} validationErrors={validationErrors} hasValidated={hasValidated} />
                     <div className="row">
 
                         <div className="asa-label col-sm-2">
@@ -428,17 +385,7 @@ export const FormView = () => {
 
                         </div>
                     </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Parent Names :
-                        </div>
-                        <div className="col-sm-10 controls">
-                            <textarea className={`form-control col-sm-10 ${getValidationClass('parentNames')}`} rows={2}
-                                name="parentNames"
-                                value={parentNames}
-                                onChange={(e) => setParentNames(e.target.value)} />
-                        </div>
-                    </div>
+                    <FormTextarea label="Parent Names" fieldName="parentNames" value={parentNames} setValue={setParentNames} rows={2} validationErrors={validationErrors} hasValidated={hasValidated} />
                     <div className="row">
 
                         <div className="asa-label col-sm-2">
@@ -474,73 +421,27 @@ export const FormView = () => {
 
                     <hr />
                     <div className="label-info" style={{ textAlign: "center", fontSize: 16 }}>College Admission Information</div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Student ID :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" className={`form-control input-sm ${getValidationClass('studentId')}`} name="studentId"
-                                value={studentId}
-                                onChange={(e) => setStudentId(e.target.value)} />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Date of Admission :
-                        </div>
-                        <div className="col-sm-10 controls">
-                            <input type="date" className={`form-control input-sm ${getValidationClass('admissionDate')}`} name="admissionDate"
-                                value={admissionDate}
-                                onChange={(e) => setAdmissionDate(e.target.value)} />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Name of College :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" className={`form-control input-sm ${getValidationClass('collegeName')}`} name="collegeName"
-                                value={collegeName}
-                                onChange={(e) => setCollegeName(e.target.value)} />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Address of College :
-                        </div>
-                        <div className="col-sm-10">
-                            <textarea className={`form-control col-sm-10 ${getValidationClass('collegeAddress')}`} rows={2} id="comment" name="collegeAddress"
-                                value={collegeAddress}
-                                onChange={(e) => setCollegeAddress(e.target.value)} />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Proposed Major :
-                        </div>
-                        <div className="col-sm-10">
-                            <input type="text" className={`form-control input-sm ${getValidationClass('studentMajor')}`} name="studentMajor"
-                                value={studentMajor}
-                                onChange={(e) => setStudentMajor(e.target.value)} />
-                        </div>
-                    </div>
+                    <FormInput label="Student ID" fieldName="studentId" value={studentId} setValue={setStudentId} validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormInput label="Date of Admission" fieldName="admissionDate" value={admissionDate} setValue={setAdmissionDate} type="date" validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormInput label="Name of College" fieldName="collegeName" value={collegeName} setValue={setCollegeName} validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormTextarea label="Address of College" fieldName="collegeAddress" value={collegeAddress} setValue={setCollegeAddress} rows={2} validationErrors={validationErrors} hasValidated={hasValidated} />
+                    <FormInput label="Proposed Major" fieldName="studentMajor" value={studentMajor} setValue={setStudentMajor} validationErrors={validationErrors} hasValidated={hasValidated} />
                     <hr />
                     <div className="label-info" style={{ textAlign: "center", fontSize: 16 }}>
                         Brief personal profile with information such as school attended, personal achievements, hobbies, GPA, future goals, etc.
                     </div>
-                    <div className="row">
-                        <div className="asa-label col-sm-2">
-                            Personal Profile:
-                        </div>
-                        <div className="col-sm-10">
-                            <textarea className={`form-control col-sm-10 ${getValidationClass('profile')}`}
-                                rows={10} maxLength={1000} id="profile" name="profile"
-                                value={profile}
-                                onChange={(e) => setProfile(e.target.value)}
-                                style={{ height: "50px" }} placeholder="Maximum of 1000 characters. Please be concise and to the point."
-                            />
-                        </div>
-                    </div>
+                    <FormTextarea
+                        label="Personal Profile"
+                        fieldName="profile"
+                        value={profile}
+                        setValue={setProfile}
+                        rows={10}
+                        maxLength={1000}
+                        placeholder="Maximum of 1000 characters. Please be concise and to the point."
+                        style={{ height: "50px" }}
+                        validationErrors={validationErrors}
+                        hasValidated={hasValidated}
+                    />
                     <div className="row">
                         <div className="col-sm-12 panel-body">
                             I affirm the information that I have (will) provided on
@@ -588,5 +489,7 @@ export const FormView = () => {
 
     </form>;
 };
+
+
 
 
