@@ -13,12 +13,25 @@ $year = $json->year;
 // $year = $_REQUEST['year'];
 
 $row = findFormByFormNumber($formNumber);
-$error = sendMail($row, $formNumber,$year,$deadline);
-echo '<<==>>';
-echo(json_encode(array("dataRows" => convertToKeyValue($row),
-    "noAdmissionLetter" => !$row["admissionLetter"], 
+
+// Check if form was found
+if (!$row || isset($row['error'])) {
+    echo json_encode(array(
+        "error" => true,
+        "message" => "Form not found"
+    ));
+    exit;
+}
+
+$mailError = sendMail($row, $formNumber, $year, $deadline);
+
+echo json_encode(array(
+    "error" => false,
+    "dataRows" => convertToKeyValue($row),
+    "noAdmissionLetter" => !$row["admissionLetter"],
     "noPassportPhoto" => !$row["passport"],
-    "mailError" => $error)));
+    "mailError" => $mailError
+));
 
 
 function convertToKeyValue($row)

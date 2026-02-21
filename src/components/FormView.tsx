@@ -25,9 +25,17 @@ export const FormView = () => {
     function loadTownsForLGA(selectedLga: string) {
         const towns = getTownsForLGA(selectedLga);
         setTowns(towns);
-        
+
+        // Reset homeTown selection to empty when LGA changes
+        setTimeout(() => {
+            const form = document.querySelector('#form');
+            const homeTownField = form?.querySelector('[name="homeTown"]') as HTMLSelectElement;
+            if (homeTownField) {
+                homeTownField.selectedIndex = 0; // Reset to first option (empty)
+            }
+        });
     }
-    
+
     function setHomeTownValue(homeTown: string) {
         setTimeout(() => {
             const form = document.querySelector('#form');

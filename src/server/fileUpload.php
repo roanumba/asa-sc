@@ -75,15 +75,12 @@ function updateRecord($formNumber, $fileName, $fieldToUpdate) {
 }
 
 if (isset($_FILES['image'])) {
-    $errors = TRUE;
     $file_name = $_FILES['image']['name'];
     $file_size = $_FILES['image']['size'];
     $file_tmp = $_FILES['image']['tmp_name'];
     $file_type = $_FILES['image']['type'];
     $xplod = explode('.', $_FILES['image']['name']);
     $file_ext = strtolower(end($xplod));
-
-    $msg = 'Upload file name: <b>' . htmlspecialchars($file_name) . '</b><br/>';
 
     // Use FILTER_SANITIZE_FULL_SPECIAL_CHARS instead of deprecated FILTER_SANITIZE_STRING
     $formNumber = filter_input(INPUT_POST, "formNumber", FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -108,24 +105,32 @@ if (isset($_FILES['image'])) {
 
     // Validate file extension
     if (in_array($file_ext, $extensions) === false) {
-        $msg .= 'File type NOT allowed, please choose a PDF, JPEG or PNG file.';
+        echo json_encode(array("error" => true, "message" => "File type not allowed. Please choose a PDF, JPEG or PNG file."));
+        exit;
     }
+
     // Validate file size
-    else if ($file_size > 2097152) {
-        $msg .= 'File size MUST be less than 2 MB';
+    if ($file_size > 2097152) {
+        echo json_encode(array("error" => true, "message" => "File size must be less than 2 MB"));
+        exit;
     }
+
     // Validate MIME type
-    else if (!validateMimeType($file_tmp, $allowedMimes)) {
-        $msg .= 'Invalid file content. File does not match allowed types.';
+    if (!validateMimeType($file_tmp, $allowedMimes)) {
         error_log("MIME type validation failed for file: " . $file_name);
+        echo json_encode(array("error" => true, "message" => "Invalid file content. File does not match allowed types."));
+        exit;
     }
+
     // Additional validation for images
-    else if (in_array($file_ext, ['jpeg', 'jpg', 'png']) && !validateImageFile($file_tmp)) {
-        $msg .= 'Invalid image file. The file appears to be corrupted or is not a valid image.';
+    if (in_array($file_ext, ['jpeg', 'jpg', 'png']) && !validateImageFile($file_tmp)) {
         error_log("Image validation failed for file: " . $file_name);
+        echo json_encode(array("error" => true, "message" => "Invalid image file. The file appears to be corrupted."));
+        exit;
     }
+
     // Process passport photo upload
-    else if ($uploadType === 'passport') {
+    if ($uploadType === 'passport') {
         // Generate secure filename
         $secureFileName = generateSecureFilename($file_ext);
         $savedFileName = $formNumber . '_' . $secureFileName;
@@ -138,16 +143,18 @@ if (isset($_FILES['image'])) {
 
         if (move_uploaded_file($file_tmp, $uploadPath)) {
             if (updateRecord($formNumber, $savedFileName, 'passport')) {
-                $msg .= 'Passport photo is successfully uploaded';
-                $errors = FALSE;
+                echo json_encode(array("error" => false, "message" => "Passport photo uploaded successfully"));
+                exit;
             } else {
                 // Clean up uploaded file if database update fails
                 @unlink($uploadPath);
-                $msg .= 'Error updating database with passport photo.';
+                echo json_encode(array("error" => true, "message" => "Error updating database with passport photo"));
+                exit;
             }
         } else {
-            $msg .= 'Error uploading passport photo to server.';
             error_log("Failed to move uploaded file to: " . $uploadPath);
+            echo json_encode(array("error" => true, "message" => "Error uploading passport photo to server"));
+            exit;
         }
     }
     // Process admission letter upload
@@ -164,18 +171,18 @@ if (isset($_FILES['image'])) {
 
         if (move_uploaded_file($file_tmp, $uploadPath)) {
             if (updateRecord($formNumber, $savedFileName, 'admissionLetter')) {
-                $msg .= 'Admission letter is successfully uploaded';
-                $errors = FALSE;
+                echo json_encode(array("error" => false, "message" => "Admission letter uploaded successfully"));
+                exit;
             } else {
                 // Clean up uploaded file if database update fails
                 @unlink($uploadPath);
-                $msg .= 'Error updating database with admission letter.';
+                echo json_encode(array("error" => true, "message" => "Error updating database with admission letter"));
+                exit;
             }
         } else {
-            $msg .= 'Error uploading admission letter to server.';
             error_log("Failed to move uploaded file to: " . $uploadPath);
+            echo json_encode(array("error" => true, "message" => "Error uploading admission letter to server"));
+            exit;
         }
     }
-
-    echo json_encode(array("error" => $errors, "message" => $msg));
 }

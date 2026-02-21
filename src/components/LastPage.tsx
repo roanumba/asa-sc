@@ -27,17 +27,19 @@ export const LastPage = () => {
             year: store.year,
             deadline: store.CLOSING_DATE
         };
-        loadLastForm(reqData, (data, status) => {
+        loadLastForm(reqData, (data, error) => {
+            if (error || data.error) {
+                toastBar.error(data?.message || "Error loading form data");
+                return;
+            }
 
-            let idx = data.indexOf('<<==>>');
-            data = data.substring(idx + 6);
-            let jsonData = JSON.parse(data);
-            const noAdmissionLetter = jsonData.noAdmissionLetter;
-            const noPassportPhoto = jsonData.noPassportPhoto;
-            const dataRows = jsonData.dataRows;
-            const mailError = jsonData.mailError;
+            const noAdmissionLetter = data.noAdmissionLetter;
+            const noPassportPhoto = data.noPassportPhoto;
+            const dataRows = data.dataRows;
+            const mailError = data.mailError;
+
             if (mailError) {
-                toastBar.error("Error: " + mailError);
+                toastBar.error("Email error: " + mailError);
             }
             setDataRows(dataRows);
             let msgElement = null;

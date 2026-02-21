@@ -204,11 +204,12 @@ export const findForm = async (formNo: string, callback: (d: any, err: any) => v
 }
 
 export const loadLastForm = async (params: any, callback: (d: any, err: any) => void) => {
-
-
     try {
-        // const params = { method: "findFormByFormNumber", params: { formNumber: formNo } };
-        const resp: any = await postTextResponse(`/lastPage.php`, params);
+        const textResponse: any = await postTextResponse(`/lastPage.php`, params);
+
+        // Parse the JSON response
+        const resp = JSON.parse(textResponse);
+
         if (resp.error) {
             callback(null, resp.error)
         }
