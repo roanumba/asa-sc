@@ -85,8 +85,9 @@ if (isset($_FILES['image'])) {
 
     $msg = 'Upload file name: <b>' . htmlspecialchars($file_name) . '</b><br/>';
 
-    $formNumber = filter_input(INPUT_POST, "formNumber", FILTER_SANITIZE_STRING);
-    $uploadType = filter_input(INPUT_POST, "uploadType", FILTER_SANITIZE_STRING);
+    // Use FILTER_SANITIZE_FULL_SPECIAL_CHARS instead of deprecated FILTER_SANITIZE_STRING
+    $formNumber = filter_input(INPUT_POST, "formNumber", FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $uploadType = filter_input(INPUT_POST, "uploadType", FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
     // Validate formNumber format
     if (empty($formNumber) || !preg_match('/^[A-Z0-9]+$/i', $formNumber)) {
