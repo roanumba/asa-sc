@@ -18,7 +18,7 @@ export const FormView = () => {
     const [submitDisabled, setSubmitDisabled] = useState(true);
     const [towns, setTowns] = useState([] as string[]);
 
-    // Phase 2 Group A: Form state for simple text fields
+    // Form state: Basic text fields
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -26,7 +26,7 @@ export const FormView = () => {
     const [collegeName, setCollegeName] = useState('');
     const [studentMajor, setStudentMajor] = useState('');
 
-    // Phase 2 Group B: Form state for complex fields
+    // Form state: Contact and profile fields
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -37,65 +37,126 @@ export const FormView = () => {
     const [collegeAddress, setCollegeAddress] = useState('');
     const [profile, setProfile] = useState('');
 
-    // Phase 2 Group C: Cascade dropdowns and checkbox
+    // Form state: Location cascade and agreement
     const [lga, setLga] = useState('');
     const [homeTown, setHomeTown] = useState('');
     const [agreed, setAgreed] = useState(false);
 
-    // Phase 2 Group C: New LGA change handler (eliminates setTimeout hack)
+    // Validation state
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [hasValidated, setHasValidated] = useState(false);
+
+    // LGA change handler with cascade reset
     const handleLgaChange = (selectedLga: string) => {
         setLga(selectedLga);
         const newTowns = getTownsForLGA(selectedLga);
         setTowns(newTowns);
-        // Reset homeTown when LGA changes (no setTimeout needed!)
+        // Reset homeTown when LGA changes
         setHomeTown('');
     };
 
-    // Old functions kept for backward compatibility during migration
-    function loadTownsForLGA(selectedLga: string) {
-        const towns = getTownsForLGA(selectedLga);
-        setTowns(towns);
+    // Get validation CSS class for a field
+    const getValidationClass = (fieldName: string): string => {
+        if (!hasValidated) return '';
+        return validationErrors.includes(fieldName) ? 'border-danger' : '';
+    };
 
-        // Reset homeTown selection to empty when LGA changes
-        setTimeout(() => {
-            const form = document.querySelector('#form');
-            const homeTownField = form?.querySelector('[name="homeTown"]') as HTMLSelectElement;
-            if (homeTownField) {
-                homeTownField.selectedIndex = 0; // Reset to first option (empty)
-            }
-        });
-    }
+    // Unified file upload handler
+    const handleFileUpload = async (
+        formNumber: string,
+        uploadType: 'admissionLetter' | 'passport'
+    ): Promise<{ success: boolean; error?: string }> => {
+        return new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
 
-    function setHomeTownValue(homeTown: string) {
-        setTimeout(() => {
-            const form = document.querySelector('#form');
-            const homeTownField = form?.querySelector('[name="homeTown"]') as HTMLSelectElement;
-            if (homeTownField && homeTown) {
-                homeTownField.value = homeTown;
-            }
+            input.onchange = async (event: any) => {
+                const files = event.target.files;
+                if (!files || files.length === 0) {
+                    resolve({ success: false });
+                    return;
+                }
+
+                dialog.setBusy(true);
+                try {
+                    const formData = new FormData();
+                    formData.append('image', files[0]);
+                    formData.append('formNumber', formNumber);
+                    formData.append('uploadType', uploadType);
+
+                    const response = await fetch(`${getApiUrl()}/fileUpload.php`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    dialog.setBusy(false);
+
+                    if (result?.error) {
+                        toastBar.error(result.message || 'Error uploading file');
+                        resolve({ success: false, error: result.message });
+                    } else {
+                        resolve({ success: true });
+                    }
+                } catch (error) {
+                    dialog.setBusy(false);
+                    toastBar.error('Error uploading file');
+                    resolve({ success: false, error: 'Upload failed' });
+                }
+            };
+
+            input.click();
         });
-    }
+    };
+
+    // Show upload dialog with unified logic
+    const showUploadDialog = (
+        formNumber: string,
+        uploadType: 'admissionLetter' | 'passport',
+        onComplete: () => void
+    ) => {
+        const config = {
+            admissionLetter: {
+                title: 'Upload Admission Letter',
+                description: 'Please click Upload to select and upload your letter of admission. If you do not currently have letter of admission, click Skip to continue.'
+            },
+            passport: {
+                title: 'Upload Passport Sized Photo',
+                description: 'Please click Upload to select and upload your passport sized photo. If you do not currently have a passport sized photo, click Skip to continue.'
+            }
+        };
+
+        const { title, description } = config[uploadType];
+
+        dialog.showDialog(
+            title,
+            <div>{description}</div>,
+            <>
+                <Button onClick={() => {
+                    dialog.hideDialog();
+                    onComplete();
+                }}>Skip</Button>
+                <Button onClick={async () => {
+                    await handleFileUpload(formNumber, uploadType);
+                    dialog.hideDialog();
+                    onComplete();
+                }}>Upload</Button>
+            </>
+        );
+    };
 
     useEffect(() => {
-        BusySpinner.setBusy(true);
-        setTimeout(() => {
-            BusySpinner.setBusy(false)
-            fillForm();
-        }, 1000)
+        fillForm();
     }, []);
     const closeView = () => {
         history.push('/');
     }
-    /*
-    * document.querySelector('#form').querySelectorAll('[name]')[0].style.border=''
-    * document.querySelector('#form').querySelectorAll('[name]')[0].style.borderColor='red'
-    * */
-
     const fillForm = () => {
         const formData: any = store.formData;
         console.log(`formData: ${JSON.stringify(formData)}`);
 
-        // Phase 2 Group A: Set controlled component state
+        // Set basic text fields from stored data
         if (formData.firstName) setFirstName(formData.firstName);
         if (formData.middleName) setMiddleName(formData.middleName);
         if (formData.lastName) setLastName(formData.lastName);
@@ -103,7 +164,7 @@ export const FormView = () => {
         if (formData.collegeName) setCollegeName(formData.collegeName);
         if (formData.studentMajor) setStudentMajor(formData.studentMajor);
 
-        // Phase 2 Group B: Set controlled component state
+        // Set contact and profile fields from stored data
         if (formData.gender) setGender(formData.gender);
         if (formData.age) setAge(formData.age);
         if (formData.phoneNumber) setPhoneNumber(formData.phoneNumber);
@@ -114,7 +175,7 @@ export const FormView = () => {
         if (formData.collegeAddress) setCollegeAddress(formData.collegeAddress);
         if (formData.profile) setProfile(formData.profile);
 
-        // Phase 2 Group C: Set cascade dropdown state
+        // Set location cascade state from stored data
         if (formData.lga) {
             setLga(formData.lga);
             const towns = getTownsForLGA(formData.lga);
@@ -123,152 +184,25 @@ export const FormView = () => {
                 setHomeTown(formData.homeTown);
             }
         }
+    }
 
-        const form = document.querySelector('#form');
-        if (form) {
-            const arrayData = new FormData(form as HTMLFormElement);
-            arrayData.forEach((value: FormDataEntryValue, key: string, parent: FormData) => {
-                const aField = form?.querySelector('[name="' + key + '"]') as HTMLFormElement;
-                if (aField) {
-                    aField.style.borderColor = ''
-                }
-                // Skip Group A, B, C fields - they're now controlled
-                if (['firstName', 'middleName', 'lastName', 'studentId', 'collegeName', 'studentMajor',
-                     'gender', 'age', 'phoneNumber', 'email', 'address', 'parentNames',
-                     'admissionDate', 'collegeAddress', 'profile', 'lga', 'homeTown', 'aggreed'].includes(key)) {
-                    return;
-                }
-                if (formData[key]) {
-                    aField.value = formData[key];
-                }
+    // Start upload flow: admission letter -> passport photo -> navigation
+    const startUploadFlow = (formNumber: string) => {
+        showUploadDialog(formNumber, 'admissionLetter', () => {
+            showUploadDialog(formNumber, 'passport', () => {
+                history.push('/lastViewPage');
             });
-        }
-
-
-    }
-
-    const uploadAdmissionLetter = (formNumber: string) => {
-        dialog.showDialog('Upload Admission Letter',
-            <div>Please click <b>Upload</b> to select and upload your letter of admission.
-                If you do not currently have letter of admission, click <b>Skip</b> to continue.</div>,
-            <>
-                <Button onClick={() => {
-                    dialog.hideDialog();
-                    uploadPassportSizedPhoto(formNumber, false);
-                }}>Skip</Button>
-                <Button onClick={(e) => {
-                    // Open file dialog directly from this click event
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*,application/pdf';
-
-                    input.onchange = async (event: any) => {
-                        const files = event.target.files;
-                        if (!files || files.length === 0) {
-                            uploadPassportSizedPhoto(formNumber, false);
-                            return;
-                        }
-
-                        dialog.setBusy(true);
-                        try {
-                            const formData = new FormData();
-                            formData.append('image', files[0]);
-                            formData.append('formNumber', formNumber);
-                            formData.append('uploadType', 'admissionLetter');
-
-                            const response = await fetch(`${getApiUrl()}/fileUpload.php`, {
-                                method: 'POST',
-                                body: formData
-                            });
-                            const result = await response.json();
-
-                            dialog.setBusy(false);
-
-                            if (result?.error) {
-                                toastBar.error(result.message || 'Error uploading admission letter');
-                            }
-
-                            uploadPassportSizedPhoto(formNumber, false);
-                        } catch (error) {
-                            dialog.setBusy(false);
-                            toastBar.error('Error uploading admission letter');
-                            uploadPassportSizedPhoto(formNumber, false);
-                        }
-                    };
-
-                    // Trigger file selection
-                    input.click();
-                }}>Upload</Button>
-            </>);
-    }
-    const uploadPassportSizedPhoto = (formNumber: string, skip: boolean) => {
-        dialog.showDialog('Upload Passport Sized Photo',
-            <div>Please click <b>Upload</b> to select and upload your passport sized photo.
-                If you do not currently have a passport sized photo, click <b>Skip</b> to continue.</div>,
-            <>
-                <Button onClick={() => {
-                    dialog.hideDialog();
-                    history.push('/lastViewPage');
-                }}>Skip</Button>
-                <Button onClick={(e) => {
-                    // Open file dialog directly from this click event
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*,application/pdf';
-
-                    input.onchange = async (event: any) => {
-                        const files = event.target.files;
-                        if (!files || files.length === 0) {
-                            dialog.hideDialog();
-                            history.push('/lastViewPage');
-                            return;
-                        }
-
-                        dialog.setBusy(true);
-                        try {
-                            const formData = new FormData();
-                            formData.append('image', files[0]);
-                            formData.append('formNumber', formNumber);
-                            formData.append('uploadType', 'passport');
-
-                            const response = await fetch(`${getApiUrl()}/fileUpload.php`, {
-                                method: 'POST',
-                                body: formData
-                            });
-                            const result = await response.json();
-
-                            dialog.setBusy(false);
-
-                            if (result?.error) {
-                                toastBar.error(result.message || 'Error uploading passport photo');
-                            }
-
-                            dialog.hideDialog();
-                            history.push('/lastViewPage');
-                        } catch (error) {
-                            dialog.setBusy(false);
-                            toastBar.error('Error uploading passport photo');
-                            dialog.hideDialog();
-                            history.push('/lastViewPage');
-                        }
-                    };
-
-                    // Trigger file selection
-                    input.click();
-                }}>Upload</Button>
-            </>);
-    }
+        });
+    };
 
 
     const sendForm = (method: string) => {
-        const form = document.querySelector('#form');
         const body: any = document.querySelector('body') || { scrollTop: 0 };
 
-        if (form) {
-            let jsonData: any = { formNumber: undefined, email: undefined };
-            let errorElements = [];
+        let jsonData: any = { formNumber: undefined, email: undefined };
+        let errorElements = [];
 
-            // Phase 2 Group A: Add controlled component values to jsonData
+            // Collect basic text field values
             jsonData.firstName = firstName;
             jsonData.middleName = middleName;
             jsonData.lastName = lastName;
@@ -276,7 +210,7 @@ export const FormView = () => {
             jsonData.collegeName = collegeName;
             jsonData.studentMajor = studentMajor;
 
-            // Phase 2 Group B: Add controlled component values to jsonData
+            // Collect contact and profile field values
             jsonData.gender = gender;
             jsonData.age = age;
             jsonData.phoneNumber = phoneNumber;
@@ -287,19 +221,17 @@ export const FormView = () => {
             jsonData.collegeAddress = collegeAddress;
             jsonData.profile = profile;
 
-            // Phase 2 Group C: Add cascade dropdown values to jsonData
+            // Collect location and agreement values
             jsonData.lga = lga;
             jsonData.homeTown = homeTown;
             jsonData.aggreed = agreed;
 
-            // Check Group A fields for empty values
+            // Validate all required fields
             if (!firstName) errorElements.push('firstName');
             if (!lastName) errorElements.push('lastName');
             if (!studentId) errorElements.push('studentId');
             if (!collegeName) errorElements.push('collegeName');
             if (!studentMajor) errorElements.push('studentMajor');
-
-            // Check Group B fields for empty values
             if (!gender) errorElements.push('gender');
             if (!age) errorElements.push('age');
             if (!phoneNumber) errorElements.push('phoneNumber');
@@ -309,45 +241,19 @@ export const FormView = () => {
             if (!admissionDate) errorElements.push('admissionDate');
             if (!collegeAddress) errorElements.push('collegeAddress');
             if (!profile) errorElements.push('profile');
-
-            // Check Group C fields for empty values
             if (!lga) errorElements.push('lga');
             if (!homeTown) errorElements.push('homeTown');
 
-            // Loop through form elements directly (includes disabled fields)
-            const elements = (form as HTMLFormElement).elements;
-            for (let i = 0; i < elements.length; i++) {
-                const element = elements[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-
-                // Skip elements without a name (like buttons)
-                if (!element.name) continue;
-
-                // Skip all controlled fields (Groups A, B, C) - they're now in React state
-                if (['firstName', 'middleName', 'lastName', 'studentId', 'collegeName', 'studentMajor',
-                     'gender', 'age', 'phoneNumber', 'email', 'address', 'parentNames',
-                     'admissionDate', 'collegeAddress', 'profile', 'lga', 'homeTown', 'aggreed'].includes(element.name)) {
-                    continue;
+            // Validate email format
+            if (email && !isEmail(email)) {
+                if (!errorElements.includes('email')) {
+                    errorElements.push('email');
                 }
-
-                // Reset border color
-                if (element.style) {
-                    element.style.borderColor = '';
-                }
-
-                // Get the value
-                const value = element.value;
-
-                // Check for empty required fields
-                if (value === "") {
-                    errorElements.push(element.name);
-                    if (element.style) {
-                        element.style.borderColor = 'red';
-                    }
-                }
-
-                // Add to jsonData
-                jsonData[element.name] = value;
             }
+
+            // Update validation state
+            setValidationErrors(errorElements);
+            setHasValidated(true);
 
             let currentFormNumber = store.formNo;
             if (currentFormNumber) {
@@ -397,14 +303,12 @@ export const FormView = () => {
                                 </span>
                             </div>
                         </div>, <Button onClick={() => {
-                            uploadAdmissionLetter(resp.data.formNumber);
+                            startUploadFlow(resp.data.formNumber);
                         }}>Ok</Button>
                         )
 
                     }
                 })
-
-            }
         }
     };
     return <form id={'form'} onSubmit={(e) => e.preventDefault()}>
@@ -438,7 +342,7 @@ export const FormView = () => {
                             <input type="text" name="firstName"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
-                                className="form-control input-sm" />
+                                className={`form-control input-sm ${getValidationClass('firstName')}`} />
                         </div>
 
                     </div>
@@ -451,7 +355,7 @@ export const FormView = () => {
                             <input type="text" name="middleName"
                                 value={middleName}
                                 onChange={(e) => setMiddleName(e.target.value)}
-                                className="form-control input-sm" />
+                                className={`form-control input-sm ${getValidationClass('middleName')}`} />
                         </div>
                     </div>
                     <div className="row">
@@ -462,7 +366,7 @@ export const FormView = () => {
                             <input type="text" name="lastName"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
-                                className="form-control input-sm" />
+                                className={`form-control input-sm ${getValidationClass('lastName')}`} />
                         </div>
                     </div>
                     <div className="row">
@@ -471,10 +375,10 @@ export const FormView = () => {
                             Gender :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="gender"
+                            <select className={`form-control input-sm ${getValidationClass('gender')}`} name="gender"
                                 value={gender}
                                 onChange={(e) => setGender(e.target.value)}>
-                                <option></option>
+                                <option value=""></option>
                                 <option>Male</option>
                                 <option>Female</option>
                             </select>
@@ -486,7 +390,7 @@ export const FormView = () => {
                             <input type="number" min="15" max="23" name="age"
                                 value={age}
                                 onChange={(e) => setAge(e.target.value)}
-                                className="form-control input-sm" />
+                                className={`form-control input-sm ${getValidationClass('age')}`} />
 
                         </div>
                     </div>
@@ -495,7 +399,7 @@ export const FormView = () => {
                             Address :
                         </div>
                         <div className="col-sm-10 controls">
-                            <textarea className="form-control col-sm-10" rows={2}
+                            <textarea className={`form-control col-sm-10 ${getValidationClass('address')}`} rows={2}
                                 name="address"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)} />
@@ -510,7 +414,7 @@ export const FormView = () => {
                             <input type="tel" name="phoneNumber"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="form-control input-sm" />
+                                className={`form-control input-sm ${getValidationClass('phoneNumber')}`} />
                         </div>
                         <div className="asa-label col-sm-2">
                             Email Address :
@@ -519,7 +423,7 @@ export const FormView = () => {
                             <input type="email" name="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="form-control input-sm"
+                                className={`form-control input-sm ${getValidationClass('email')}`}
                                 placeholder="Current email is very important to communicate with you" />
 
                         </div>
@@ -529,7 +433,7 @@ export const FormView = () => {
                             Parent Names :
                         </div>
                         <div className="col-sm-10 controls">
-                            <textarea className="form-control col-sm-10" rows={2}
+                            <textarea className={`form-control col-sm-10 ${getValidationClass('parentNames')}`} rows={2}
                                 name="parentNames"
                                 value={parentNames}
                                 onChange={(e) => setParentNames(e.target.value)} />
@@ -541,7 +445,7 @@ export const FormView = () => {
                             LGA :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="lga"
+                            <select className={`form-control input-sm ${getValidationClass('lga')}`} name="lga"
                                 value={lga}
                                 onChange={(e) => handleLgaChange(e.target.value)}>
                                 <option value=""> </option>
@@ -556,7 +460,7 @@ export const FormView = () => {
                             Home Town :
                         </div>
                         <div className="col-sm-4">
-                            <select className="form-control input-sm" name="homeTown"
+                            <select className={`form-control input-sm ${getValidationClass('homeTown')}`} name="homeTown"
                                 value={homeTown}
                                 onChange={(e) => setHomeTown(e.target.value)}
                                 disabled={towns.length === 0}>
@@ -575,7 +479,7 @@ export const FormView = () => {
                             Student ID :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="studentId"
+                            <input type="text" className={`form-control input-sm ${getValidationClass('studentId')}`} name="studentId"
                                 value={studentId}
                                 onChange={(e) => setStudentId(e.target.value)} />
                         </div>
@@ -585,7 +489,7 @@ export const FormView = () => {
                             Date of Admission :
                         </div>
                         <div className="col-sm-10 controls">
-                            <input type="date" className="form-control input-sm" name="admissionDate"
+                            <input type="date" className={`form-control input-sm ${getValidationClass('admissionDate')}`} name="admissionDate"
                                 value={admissionDate}
                                 onChange={(e) => setAdmissionDate(e.target.value)} />
                         </div>
@@ -595,7 +499,7 @@ export const FormView = () => {
                             Name of College :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="collegeName"
+                            <input type="text" className={`form-control input-sm ${getValidationClass('collegeName')}`} name="collegeName"
                                 value={collegeName}
                                 onChange={(e) => setCollegeName(e.target.value)} />
                         </div>
@@ -605,7 +509,7 @@ export const FormView = () => {
                             Address of College :
                         </div>
                         <div className="col-sm-10">
-                            <textarea className="form-control col-sm-10" rows={2} id="comment" name="collegeAddress"
+                            <textarea className={`form-control col-sm-10 ${getValidationClass('collegeAddress')}`} rows={2} id="comment" name="collegeAddress"
                                 value={collegeAddress}
                                 onChange={(e) => setCollegeAddress(e.target.value)} />
                         </div>
@@ -615,7 +519,7 @@ export const FormView = () => {
                             Proposed Major :
                         </div>
                         <div className="col-sm-10">
-                            <input type="text" className="form-control input-sm" name="studentMajor"
+                            <input type="text" className={`form-control input-sm ${getValidationClass('studentMajor')}`} name="studentMajor"
                                 value={studentMajor}
                                 onChange={(e) => setStudentMajor(e.target.value)} />
                         </div>
@@ -629,7 +533,7 @@ export const FormView = () => {
                             Personal Profile:
                         </div>
                         <div className="col-sm-10">
-                            <textarea className="form-control col-sm-10"
+                            <textarea className={`form-control col-sm-10 ${getValidationClass('profile')}`}
                                 rows={10} maxLength={1000} id="profile" name="profile"
                                 value={profile}
                                 onChange={(e) => setProfile(e.target.value)}
