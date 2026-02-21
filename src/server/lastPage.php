@@ -1,5 +1,5 @@
 <?php
-include 'dbConnection.php';
+include_once 'dbConnection.php';
 
 $request_body = file_get_contents('php://input');
 $json = json_decode($request_body);
@@ -38,15 +38,37 @@ function findFormByFormNumber($formNo)
     try {
         $con = getConnection();
 
-        $sql = "select * from  scholarship where formNumber= '" . $formNo . "'";
-        $result = mysqli_query($con, $sql);
+        // Use prepared statement to prevent SQL injection
+        $sql = "SELECT * FROM scholarship WHERE formNumber = ?";
+        $stmt = mysqli_prepare($con, $sql);
 
+        if (!$stmt) {
+            $error = mysqli_error($con);
+            error_log("Failed to prepare statement: " . $error);
+            mysqli_close($con);
+            return array('error' => TRUE, 'errorMsg' => 'Database query error');
+        }
+
+        mysqli_stmt_bind_param($stmt, "s", $formNo);
+        $execResult = mysqli_stmt_execute($stmt);
+
+        if (!$execResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to execute statement: " . $error);
+            mysqli_stmt_close($stmt);
+            mysqli_close($con);
+            return array('error' => TRUE, 'errorMsg' => 'Database query error');
+        }
+
+        $result = mysqli_stmt_get_result($stmt);
         $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
+        mysqli_stmt_close($stmt);
         mysqli_close($con);
         return $row;
     } catch (Exception $exc) {
         $error = $exc->getMessage();
+        error_log("Form retrieval exception: " . $error);
         return array('error' => TRUE, 'errorMsg' => $error);
     }
 }
@@ -97,7 +119,7 @@ function sendMail($row, $formNumber,$year,$deadline)
         $success = mail($to, $subject, $message, $Header);
 
         $e = error_get_last();
-        $error = $e['message'];
+        $error = $e !== null ? $e['message'] : null;
 
     } catch (Exception $ex) {
         $error = $ex->getMessage();

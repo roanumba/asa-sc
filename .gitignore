@@ -25,6 +25,9 @@
 .idea
 .vscode
 
+# PHP environment file (contains sensitive credentials)
+src/server/.env
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

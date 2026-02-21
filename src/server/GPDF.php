@@ -1,8 +1,8 @@
 <?php
 
-require('./lib/fpdf.php');
+require_once('./lib/fpdf.php');
 
-require('dbConnection.php');
+require_once('dbConnection.php');
 
 class PDF extends FPDF {
 

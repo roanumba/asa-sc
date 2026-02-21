@@ -1,7 +1,7 @@
 <?php
-include 'dbConnection.php';
+include_once 'dbConnection.php';
 
-include 'clientHandler.php';
+include_once 'clientHandler.php';
 
 function getFieds()
 {
@@ -190,16 +190,37 @@ function findFormByFormNumber($params)
         $formNo = strtoupper($params->formNumber);
         $con = getConnection();
 
-        $sql = "select * from  scholarship where formNumber= '" . $formNo . "'";
-        $result = mysqli_query($con, $sql);
+        // Use prepared statement to prevent SQL injection
+        $sql = "SELECT * FROM scholarship WHERE formNumber = ?";
+        $stmt = mysqli_prepare($con, $sql);
 
+        if (!$stmt) {
+            $error = mysqli_error($con);
+            error_log("Failed to prepare statement: " . $error);
+            mysqli_close($con);
+            throw new Exception("Database query error");
+        }
+
+        mysqli_stmt_bind_param($stmt, "s", $formNo);
+        $execResult = mysqli_stmt_execute($stmt);
+
+        if (!$execResult) {
+            $error = mysqli_stmt_error($stmt);
+            error_log("Failed to execute statement: " . $error);
+            mysqli_stmt_close($stmt);
+            mysqli_close($con);
+            throw new Exception("Database query error");
+        }
+
+        $result = mysqli_stmt_get_result($stmt);
         $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
+        mysqli_stmt_close($stmt);
         mysqli_close($con);
         return $row;
     } catch (Exception $exc) {
         $error = $exc->getMessage();
-        // return array('error' => TRUE, 'errorMsg' => $error);
+        error_log("Form retrieval exception: " . $error);
         throw new Exception("Unknown system error during form retrieval");
     }
 }

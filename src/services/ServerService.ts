@@ -122,9 +122,23 @@ const openFileDialog = (fileType: string) => {
 
 export const uploadFile = (formNumber: string, file: string, callback: (resp: any, error: any) => void) => {
     dialog.setBusy(true);
-    try {
-        openFileDialog('image/*,application/pdf').onchange = async (e: any) => {
+
+    const input = openFileDialog('image/*,application/pdf');
+    let hasFileSelected = false;
+
+    // Handle file selection
+    input.onchange = async (e: any) => {
+        hasFileSelected = true;
+        try {
             const files = e.target.files;
+
+            // Check if files were actually selected
+            if (!files || files.length === 0) {
+                dialog.setBusy(false);
+                callback({ error: true, message: 'No file selected' }, null);
+                return;
+            }
+
             const formData = new FormData();
             formData.append('image', files[0]);
             formData.append('formNumber', formNumber);
@@ -136,16 +150,28 @@ export const uploadFile = (formNumber: string, file: string, callback: (resp: an
             });
             const result = await response.json();
 
-            callback(result, null)
-
+            dialog.setBusy(false);
+            callback(result, null);
+        } catch (error) {
+            dialog.setBusy(false);
+            callback(null, error);
         }
-    } catch (error) {
-        callback(null, error)
-    } finally {
-        dialog.setBusy(false);
-    }
+    };
 
+    // Detect when file dialog is canceled (user clicks cancel or closes dialog)
+    // Use a timeout to check if user canceled the file selection
+    const checkCancellation = () => {
+        setTimeout(() => {
+            // If window regains focus and no file was selected, user likely canceled
+            if (!hasFileSelected) {
+                dialog.setBusy(false);
+                callback({ error: true, message: 'File selection canceled' }, null);
+            }
+        }, 300);
+    };
 
+    // Listen for window focus to detect dialog dismissal
+    window.addEventListener('focus', checkCancellation, { once: true });
 }
 export const saveForm = async (params: { method: string; params: any }, callback: (data: any, error: any) => void) => {
 
@@ -172,12 +198,12 @@ export const findForm = async (formNo: string, callback: (d: any, err: any) => v
         }
     } catch (error) {
         callback(null, error)
-    }finally{
+    } finally {
         dialog.setBusy(false);
     }
 }
 
-export const loadLastForm = async (params:any, callback: (d: any, err: any) => void) => {
+export const loadLastForm = async (params: any, callback: (d: any, err: any) => void) => {
 
 
     try {
@@ -191,7 +217,7 @@ export const loadLastForm = async (params:any, callback: (d: any, err: any) => v
         }
     } catch (error) {
         callback(null, error)
-    }finally{
+    } finally {
         dialog.setBusy(false);
     }
 }
