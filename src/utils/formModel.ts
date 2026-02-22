@@ -7,6 +7,11 @@
  * - Primitive types (string, number, boolean)
  * - Objects (plain objects are deep cloned on initialization)
  * - Arrays (array values are properly cloned to avoid mutations)
+ * Helper methods:
+ * - getValues(): Returns a plain object with all current form values.
+ * - reset(): Resets all fields to their initial values.
+ * - resetFields(...fields): Resets specific fields to their initial values.
+ * - setValues(values): Sets multiple fields at once.
  *
  * @example
  * const form = useModel({
@@ -27,6 +32,21 @@
  * form.reset();                        // Reset all to initial values
  * form.resetFields('name', 'age');     // Reset specific fields
  * form.setValues({ name: 'Jane' });    // Set multiple values at once
+ * 
+ * Helper method examples:
+ * 
+ * // Get all current form values
+ * const values = form.getValues();
+ * 
+ * // Reset all fields to their initial values
+ * form.reset();
+ * 
+ * // Reset specific fields to their initial values
+ * form.resetFields('fieldName1', 'fieldName2');
+ * 
+ * // Set multiple values at once
+ * form.setValues({ fieldName1: newValue1, fieldName2: newValue2 });
+ * 
  **/
 
 import React from "react";
