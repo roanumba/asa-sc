@@ -14,10 +14,25 @@ function validateMimeType($fileTmpPath, $allowedMimes) {
 }
 
 /**
- * Generates a secure random filename
+ * Generates a descriptive filename from original filename
+ * Format: first 10 characters (or less) of original name
  */
-function generateSecureFilename($extension) {
-    return bin2hex(random_bytes(16)) . '.' . $extension;
+function generateDescriptiveFilename($originalName, $extension) {
+    // Remove extension from original name
+    $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+
+    // Clean the filename - remove special chars, keep alphanumeric, dash, underscore
+    $cleanName = preg_replace('/[^a-zA-Z0-9_-]/', '', $nameWithoutExt);
+
+    // Take first 10 characters
+    $shortName = substr($cleanName, 0, 10);
+
+    // If empty after cleaning, use a default
+    if (empty($shortName)) {
+        $shortName = 'file';
+    }
+
+    return $shortName . '.' . $extension;
 }
 
 /**
@@ -131,10 +146,20 @@ if (isset($_FILES['image'])) {
 
     // Process passport photo upload
     if ($uploadType === 'passport') {
-        // Generate secure filename
-        $secureFileName = generateSecureFilename($file_ext);
-        $savedFileName = $formNumber . '_' . $secureFileName;
+        // Generate descriptive filename from original name
+        $descriptiveFileName = generateDescriptiveFilename($file_name, $file_ext);
+        $savedFileName = $formNumber . '_' . $descriptiveFileName;
         $uploadPath = "passports/" . $savedFileName;
+
+        // Delete old passport file if exists (to prevent duplicates)
+        if (is_dir("passports")) {
+            $oldFiles = glob("passports/" . $formNumber . "_*");
+            foreach ($oldFiles as $oldFile) {
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+        }
 
         // Ensure directory exists
         if (!is_dir("passports")) {
@@ -159,10 +184,20 @@ if (isset($_FILES['image'])) {
     }
     // Process admission letter upload
     else {
-        // Generate secure filename
-        $secureFileName = generateSecureFilename($file_ext);
-        $savedFileName = $formNumber . '_' . $secureFileName;
+        // Generate descriptive filename from original name
+        $descriptiveFileName = generateDescriptiveFilename($file_name, $file_ext);
+        $savedFileName = $formNumber . '_' . $descriptiveFileName;
         $uploadPath = "images/" . $savedFileName;
+
+        // Delete old admission letter file if exists (to prevent duplicates)
+        if (is_dir("images")) {
+            $oldFiles = glob("images/" . $formNumber . "_*");
+            foreach ($oldFiles as $oldFile) {
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+        }
 
         // Ensure directory exists
         if (!is_dir("images")) {

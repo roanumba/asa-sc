@@ -3,7 +3,9 @@ import { dialog } from "./DialogService";
 // Get base URL from <base> tag or fallback to '/'
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
 
-const apiUrl = `${baseName}server`;
+// Use new REST API endpoints
+const apiUrl = `${baseName}server/api`;
+const legacyApiUrl = `${baseName}server`;
 export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
     try {
         let data = null;
@@ -144,7 +146,8 @@ export const uploadFile = (formNumber: string, file: string, callback: (resp: an
             formData.append('formNumber', formNumber);
             formData.append('uploadType', file);
 
-            const response = await fetch(`${apiUrl}/fileUpload.php`, {
+            // File upload still uses legacy endpoint for now
+            const response = await fetch(`${legacyApiUrl}/fileUpload.php`, {
                 method: 'POST',
                 body: formData
             });
@@ -174,13 +177,32 @@ export const uploadFile = (formNumber: string, file: string, callback: (resp: an
     window.addEventListener('focus', checkCancellation, { once: true });
 }
 export const saveForm = async (params: { method: string; params: any }, callback: (data: any, error: any) => void) => {
+    // Determine if this is a create or update based on method
+    const isUpdate = params.method === 'updateRecord';
+    const formData = params.params;
 
-    const resp: any = await post(`/formService.php`, params);
-    if (resp.error) {
-        callback(null, resp.error)
-    }
-    else {
-        callback(resp, null)
+    try {
+        const endpoint = isUpdate
+            ? `/applications/${formData.formNumber}`
+            : `/applications`;
+
+        const method = isUpdate ? 'PUT' : 'POST';
+
+        const response = await fetchWithoutToken(endpoint, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        });
+
+        if (response && response.success) {
+            callback({ data: response.data }, null);
+        } else {
+            callback(null, response?.error || 'Unknown error');
+        }
+    } catch (error) {
+        callback(null, error);
     }
 }
 
@@ -188,16 +210,16 @@ export const findForm = async (formNo: string, callback: (d: any, err: any) => v
     dialog.setBusy(true);
 
     try {
-        const params = { method: "findFormByFormNumber", params: { formNumber: formNo } };
-        const resp: any = await post(`/formService.php`, params);
-        if (resp.error) {
-            callback(null, resp.error)
-        }
-        else {
-            callback(resp, null)
+        const response = await fetchWithoutToken(`/applications/${formNo}`);
+
+        if (response && response.success) {
+            // Keep the structure that FormView expects: { data: {...} }
+            callback({ data: response.data }, null);
+        } else {
+            callback(null, response?.error || 'Application not found');
         }
     } catch (error) {
-        callback(null, error)
+        callback(null, error);
     } finally {
         dialog.setBusy(false);
     }
@@ -205,19 +227,25 @@ export const findForm = async (formNo: string, callback: (d: any, err: any) => v
 
 export const loadLastForm = async (params: any, callback: (d: any, err: any) => void) => {
     try {
-        const textResponse: any = await postTextResponse(`/lastPage.php`, params);
+        // LastPage still uses legacy endpoint - call it directly without going through REST API
+        const resp = await fetch(`${legacyApiUrl}/lastPage.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params),
+        });
 
-        // Parse the JSON response
-        const resp = JSON.parse(textResponse);
+        const textResponse = await resp.text();
+        const data = JSON.parse(textResponse);
 
-        if (resp.error) {
-            callback(null, resp.error)
-        }
-        else {
-            callback(resp, null)
+        if (data.error) {
+            callback(null, data.error);
+        } else {
+            callback(data, null);
         }
     } catch (error) {
-        callback(null, error)
+        callback(null, error);
     } finally {
         dialog.setBusy(false);
     }

@@ -51,17 +51,19 @@ export class StoreService {
 
     async init() {
         try {
-            const resp:any= await fetchWithoutToken('/loadConfig.php?method=load');
-            // const resp = JSON.parse(data);
-            const config=resp.data;
-            this.CLOSING_DATE = config.CLOSING_DATE;
-            this.OPENING_DATE = config.OPENING_DATE;
+            // Use new REST API endpoint for config
+            const resp:any= await fetchWithoutToken('/config');
 
-
+            if (resp && resp.success && resp.data) {
+                this.CLOSING_DATE = resp.data.CLOSING_DATE;
+                this.OPENING_DATE = resp.data.OPENING_DATE;
+            } else {
+                throw new Error('Failed to load config');
+            }
         } catch (error) {
             console.log(error);
             toastBar.error("Error loading config");
-        }finally{
+        } finally {
             this.deadLineDate = dayjs(this.CLOSING_DATE, 'YYYY-MM-DD');
             this.deadline = this.deadLineDate.format('LL');
             this.year = this.deadLineDate.year();

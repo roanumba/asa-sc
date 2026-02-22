@@ -1,0 +1,106 @@
+import { fetchWithoutToken } from "./ServerService";
+
+export interface AdminUser {
+    username: string;
+    role: string;
+}
+
+class AuthService {
+    private isAuthenticated: boolean = false;
+    private currentUser: AdminUser | null = null;
+
+    /**
+     * Check if admin is currently logged in
+     */
+    async checkSession(): Promise<boolean> {
+        try {
+            const response = await fetchWithoutToken('/auth/session');
+
+            if (response && response.success && response.data.authenticated) {
+                this.isAuthenticated = true;
+                this.currentUser = {
+                    username: response.data.username,
+                    role: 'admin'
+                };
+                return true;
+            } else {
+                this.isAuthenticated = false;
+                this.currentUser = null;
+                return false;
+            }
+        } catch (error) {
+            console.error('Session check failed:', error);
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            return false;
+        }
+    }
+
+    /**
+     * Login with username and password
+     */
+    async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const response = await fetchWithoutToken('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response && response.success) {
+                this.isAuthenticated = true;
+                this.currentUser = {
+                    username: response.data.username,
+                    role: response.data.role
+                };
+                return { success: true };
+            } else {
+                return {
+                    success: false,
+                    error: response?.error || 'Login failed'
+                };
+            }
+        } catch (error: any) {
+            console.error('Login error:', error);
+            return {
+                success: false,
+                error: error.message || 'Network error'
+            };
+        }
+    }
+
+    /**
+     * Logout current admin
+     */
+    async logout(): Promise<void> {
+        try {
+            await fetchWithoutToken('/auth/logout', {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            this.isAuthenticated = false;
+            this.currentUser = null;
+        }
+    }
+
+    /**
+     * Get current authenticated user
+     */
+    getCurrentUser(): AdminUser | null {
+        return this.currentUser;
+    }
+
+    /**
+     * Check if user is authenticated (synchronous)
+     */
+    isLoggedIn(): boolean {
+        return this.isAuthenticated;
+    }
+}
+
+// Export singleton instance
+export const authService = new AuthService();
