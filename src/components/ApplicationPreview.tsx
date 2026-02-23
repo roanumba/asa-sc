@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { DocumentPreview } from './DocumentPreview';
+import { DocumentReplaceModal } from './DocumentReplaceModal';
 import { fetchWithoutToken } from '../services/ServerService';
 import { store } from '../index';
 
@@ -34,6 +35,8 @@ export const ApplicationPreview: React.FC = () => {
     const [data, setData] = useState<ApplicationData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showReplaceModal, setShowReplaceModal] = useState(false);
+    const [replaceDocType, setReplaceDocType] = useState<'admissionLetter' | 'passport'>('admissionLetter');
 
     useEffect(() => {
         initializeAndLoad();
@@ -66,12 +69,27 @@ export const ApplicationPreview: React.FC = () => {
     const handleEdit = (section: string) => {
         if (!data) return;
 
+        if (section === 'documents') {
+            // Don't navigate to FormView for documents, they'll use the replace modal
+            return;
+        }
+
         // Store the application data so FormView can load it
         store.formData = data as any;
         store.formNo = formNumber;
 
         // Navigate to FormView to edit
         history.push('/formViewPage');
+    };
+
+    const handleReplaceDocument = (docType: 'admissionLetter' | 'passport') => {
+        setReplaceDocType(docType);
+        setShowReplaceModal(true);
+    };
+
+    const handleReplaceSuccess = () => {
+        // Reload the application data to show the new document
+        loadApplication();
     };
 
     const handleSubmit = () => {
@@ -256,19 +274,23 @@ export const ApplicationPreview: React.FC = () => {
 
             {/* Documents Section */}
             <div className="card mb-3">
-                <div className="card-header d-flex justify-content-between align-items-center">
+                <div className="card-header">
                     <h5 className="mb-0">Documents</h5>
-                    <button
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => handleEdit('documents')}
-                    >
-                        <i className="bi bi-arrow-repeat"></i> Replace Documents
-                    </button>
                 </div>
                 <div className="card-body">
                     <div className="row">
                         <div className="col-md-6">
-                            <h6 className="mb-3">Admission Letter</h6>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="mb-0">Admission Letter</h6>
+                                {data.admissionLetter && (
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => handleReplaceDocument('admissionLetter')}
+                                    >
+                                        <i className="bi bi-arrow-repeat"></i> Replace
+                                    </button>
+                                )}
+                            </div>
                             {data.admissionLetter ? (
                                 <DocumentPreview
                                     fileName={data.admissionLetter}
@@ -278,11 +300,27 @@ export const ApplicationPreview: React.FC = () => {
                             ) : (
                                 <div className="alert alert-warning">
                                     <i className="bi bi-exclamation-triangle"></i> Not uploaded
+                                    <button
+                                        className="btn btn-sm btn-warning mt-2 w-100"
+                                        onClick={() => handleReplaceDocument('admissionLetter')}
+                                    >
+                                        Upload Now
+                                    </button>
                                 </div>
                             )}
                         </div>
                         <div className="col-md-6">
-                            <h6 className="mb-3">Passport Photo</h6>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="mb-0">Passport Photo</h6>
+                                {data.passport && (
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => handleReplaceDocument('passport')}
+                                    >
+                                        <i className="bi bi-arrow-repeat"></i> Replace
+                                    </button>
+                                )}
+                            </div>
                             {data.passport ? (
                                 <DocumentPreview
                                     fileName={data.passport}
@@ -292,6 +330,12 @@ export const ApplicationPreview: React.FC = () => {
                             ) : (
                                 <div className="alert alert-warning">
                                     <i className="bi bi-exclamation-triangle"></i> Not uploaded
+                                    <button
+                                        className="btn btn-sm btn-warning mt-2 w-100"
+                                        onClick={() => handleReplaceDocument('passport')}
+                                    >
+                                        Upload Now
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -349,6 +393,22 @@ export const ApplicationPreview: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Document Replace Modal */}
+            {data && (
+                <DocumentReplaceModal
+                    show={showReplaceModal}
+                    formNumber={formNumber}
+                    documentType={replaceDocType}
+                    currentFileName={
+                        replaceDocType === 'admissionLetter'
+                            ? data.admissionLetter || ''
+                            : data.passport || ''
+                    }
+                    onClose={() => setShowReplaceModal(false)}
+                    onSuccess={handleReplaceSuccess}
+                />
+            )}
         </div>
     );
 };
