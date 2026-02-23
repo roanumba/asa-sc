@@ -10,8 +10,11 @@ export const RouteHome = () => {
 
    useEffect(() => {
       (async () => {
-         // Skip date-based routing for admin pages
-         if (location.pathname.startsWith('/admin')) {
+         // Skip date-based routing for admin pages, preview, form, and last page
+         if (location.pathname.startsWith('/admin') ||
+             location.pathname.startsWith('/preview') ||
+             location.pathname === '/formViewPage' ||
+             location.pathname === '/lastViewPage') {
             return;
          }
 

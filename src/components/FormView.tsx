@@ -190,7 +190,8 @@ export const FormView = () => {
     const startUploadFlow = (formNumber: string) => {
         showUploadDialog(formNumber, 'admissionLetter', () => {
             showUploadDialog(formNumber, 'passport', () => {
-                history.push('/lastViewPage');
+                // Navigate to preview page instead of lastViewPage
+                history.push(`/preview/${formNumber}`);
             });
         });
     };

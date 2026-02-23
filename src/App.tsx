@@ -19,6 +19,7 @@ import { ClosedPage } from "./components/ClosedPage";
 import { OpeningPage } from "./components/OpeningPage";
 import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { ApplicationPreview } from "./components/ApplicationPreview";
 
 // Get basename from <base> tag and remove trailing slash for React Router
 const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
@@ -58,13 +59,14 @@ export const App=() =>{
           <Route exact path="/" component={InitialPage} key={1}/>
 
             <Route exact path="/formViewPage" component={FormView} key={2}/>
-            <Route exact path="/lastViewPage" component={LastPage} key={3}/>
-            <Route exact path="/closedPage" component={ClosedPage} key={4}/>
-            <Route exact path="/openingPage" component={OpeningPage} key={5}/>
+            <Route exact path="/preview/:formNumber" component={ApplicationPreview} key={3}/>
+            <Route exact path="/lastViewPage" component={LastPage} key={4}/>
+            <Route exact path="/closedPage" component={ClosedPage} key={5}/>
+            <Route exact path="/openingPage" component={OpeningPage} key={6}/>
 
             {/* Admin routes */}
-            <Route exact path="/admin/login" component={AdminLogin} key={6}/>
-            <Route exact path="/admin/dashboard" component={AdminDashboard} key={7}/>
+            <Route exact path="/admin/login" component={AdminLogin} key={7}/>
+            <Route exact path="/admin/dashboard" component={AdminDashboard} key={8}/>
 
             {/* <Route exact path="/about" component={About} key={2}/> */}
 
