@@ -64,8 +64,14 @@ export const ApplicationPreview: React.FC = () => {
     };
 
     const handleEdit = (section: string) => {
-        // For Phase 2 - will implement edit functionality
-        alert(`Edit ${section} - This will be implemented in Phase 2`);
+        if (!data) return;
+
+        // Store the application data so FormView can load it
+        store.formData = data as any;
+        store.formNo = formNumber;
+
+        // Navigate to FormView to edit
+        history.push('/formViewPage');
     };
 
     const handleSubmit = () => {

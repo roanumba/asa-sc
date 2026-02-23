@@ -58,6 +58,43 @@ export const InitialPage = () => {
            history.push('/formViewPage');
        }
 
+       const viewApplication = () => {
+           setTimeout(() => {
+               dialog.showDialog('View Your Application',
+                   <Row>
+                       <Col sm={{ offset: 3, span: 6 }}>
+                           Enter Your Form Number
+                           <input
+                               id="inpViewFormNo"
+                               className="form-control form-control-lg"
+                               type="text"
+                               onChange={(e) => {
+                                   const formNo = e.target.value.toUpperCase();
+                                   store.formNo = formNo;
+                               }}
+                               placeholder="Form Number"
+                           />
+                       </Col>
+                   </Row>,
+                   <Button onClick={(e) => {
+                       e.preventDefault();
+                       if (store.formNo) {
+                           const formNo = store.formNo;
+                           // Navigate to preview page
+                           history.push(`/preview/${formNo}`);
+                           dialog.hideDialog();
+                           // Clear formNo and input field
+                           store.formNo = '';
+                           const input = document.getElementById("inpViewFormNo") as HTMLInputElement;
+                           if (input) input.value = '';
+                       } else {
+                           toastBar.error('Form Number is required to view application.');
+                       }
+                   }}>View Application</Button>
+               );
+           }, 10);
+       }
+
        const upload = (type:string) => {
    
             const formNo=store.formNo;
@@ -179,6 +216,10 @@ export const InitialPage = () => {
 
             <div style={{fontSize: 16}}>
                 <Button className="btn btn-danger" onClick={newForm}> Start a new form</Button>
+                {' '}
+                <Button className="btn btn-primary" onClick={viewApplication}>
+                    View/Continue Application
+                </Button>
             </div>
             <hr/>
             <div style={{fontSize: 18}}>
