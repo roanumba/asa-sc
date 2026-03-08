@@ -221,38 +221,18 @@ export const InitialPage = () => {
                     View/Continue Application
                 </Button>
             </div>
-            <hr/>
-            <div style={{fontSize: 18}}>
-                If you have already complted a form, you can <b>edit</b> it, OR <b>upload</b> your passport sized photo OR letter of admission.
-            </div>
-            <Row style={{marginTop:15}}>
-                <Col sm={{span: 4}}>
-                    <Button variant={"info"} size="sm" id="editForm" onClick={(e)=>{
-                        e.preventDefault();
-                        uploadPhotoORLetter("form")
-                    }}>
-                        Edit  Completed Form
-                    </Button>
-                </Col>
-
-                <Col sm={{ span: 4}}>
-                    <Button variant={"success"} size="sm" id="uploadPhoto" onClick={(e)=>{
-                        e.preventDefault();
-                        uploadPhotoORLetter("passport")}}>
-                        Upload Passport sized Photo
-                    </Button>
-                </Col>
-                <Col sm={{ span: 4}}>
-                    <Button variant={"warning"} size="sm" id="uploadLetter" onClick={(e)=>{
-                        e.preventDefault();
-                        uploadPhotoORLetter("letter")}}>
-                        Upload Admission Letter
-                    </Button>
-                </Col>
-
-            </Row>
 
 
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 30, paddingBottom: 20 }}>
+            <Button
+                variant="link"
+                size="sm"
+                style={{ color: '#999', fontSize: 12 }}
+                onClick={() => history.push('/admin/login')}
+            >
+                Admin Login
+            </Button>
         </div>
     </div>;
 }

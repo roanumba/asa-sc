@@ -74,6 +74,11 @@ function listApplications($params) {
 
         $applications = [];
         while ($row = mysqli_fetch_assoc($result)) {
+            // Check physical file existence
+            $row['letterExists'] = !empty($row['admissionLetter']) &&
+                file_exists(__DIR__ . '/../images/' . $row['admissionLetter']);
+            $row['passportExists'] = !empty($row['passport']) &&
+                file_exists(__DIR__ . '/../passports/' . $row['passport']);
             $applications[] = $row;
         }
 

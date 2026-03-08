@@ -37,6 +37,10 @@ export const ApplicationPreview: React.FC = () => {
     const [error, setError] = useState('');
     const [showReplaceModal, setShowReplaceModal] = useState(false);
     const [replaceDocType, setReplaceDocType] = useState<'admissionLetter' | 'passport'>('admissionLetter');
+    const [fileExistence, setFileExistence] = useState<{
+        admissionLetter: boolean;
+        passport: boolean;
+    }>({ admissionLetter: false, passport: false });
 
     useEffect(() => {
         initializeAndLoad();
@@ -56,6 +60,8 @@ export const ApplicationPreview: React.FC = () => {
             if (response && response.success) {
                 setData(response.data);
                 setError('');
+                // Check if files actually exist
+                await checkFileExistence(response.data);
             } else {
                 setError(response?.error || 'Failed to load application');
             }
@@ -64,6 +70,45 @@ export const ApplicationPreview: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const checkFileExistence = async (appData: ApplicationData) => {
+        const baseUrl = window.location.origin;
+        const basePath = document.querySelector('base')?.getAttribute('href') ?? '/';
+        const cleanBasePath = basePath.replace(/\/$/, '');
+
+        const existence = {
+            admissionLetter: false,
+            passport: false
+        };
+
+        // Check admission letter
+        if (appData.admissionLetter) {
+            try {
+                const response = await fetch(
+                    `${baseUrl}${cleanBasePath}/server/viewFile.php?form=${formNumber}&type=admissionLetter`,
+                    { method: 'HEAD' }
+                );
+                existence.admissionLetter = response.ok;
+            } catch {
+                existence.admissionLetter = false;
+            }
+        }
+
+        // Check passport
+        if (appData.passport) {
+            try {
+                const response = await fetch(
+                    `${baseUrl}${cleanBasePath}/server/viewFile.php?form=${formNumber}&type=passport`,
+                    { method: 'HEAD' }
+                );
+                existence.passport = response.ok;
+            } catch {
+                existence.passport = false;
+            }
+        }
+
+        setFileExistence(existence);
     };
 
     const handleEdit = (section: string) => {
@@ -113,7 +158,13 @@ export const ApplicationPreview: React.FC = () => {
 
     const isComplete = (appData: ApplicationData | null) => {
         if (!appData) return false;
-        return !!(appData.admissionLetter && appData.passport);
+        // Check both database entries AND physical file existence
+        return !!(
+            appData.admissionLetter &&
+            fileExistence.admissionLetter &&
+            appData.passport &&
+            fileExistence.passport
+        );
     };
 
     if (loading) {
@@ -282,7 +333,7 @@ export const ApplicationPreview: React.FC = () => {
                         <div className="col-md-6">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="mb-0">Admission Letter</h6>
-                                {data.admissionLetter && (
+                                {data.admissionLetter && fileExistence.admissionLetter && (
                                     <button
                                         className="btn btn-sm btn-outline-primary"
                                         onClick={() => handleReplaceDocument('admissionLetter')}
@@ -291,12 +342,30 @@ export const ApplicationPreview: React.FC = () => {
                                     </button>
                                 )}
                             </div>
-                            {data.admissionLetter ? (
+                            {data.admissionLetter && fileExistence.admissionLetter ? (
                                 <DocumentPreview
                                     fileName={data.admissionLetter}
                                     type="letter"
                                     formNumber={formNumber}
                                 />
+                            ) : data.admissionLetter && !fileExistence.admissionLetter ? (
+                                <div className="alert alert-danger">
+                                    <i className="bi bi-exclamation-triangle-fill"></i> File Missing
+                                    <div className="mt-2">
+                                        <small className="text-muted d-block">
+                                            Database shows: <del>{data.admissionLetter}</del>
+                                        </small>
+                                        <small className="text-muted d-block mb-2">
+                                            File not found on server. Please upload again.
+                                        </small>
+                                    </div>
+                                    <button
+                                        className="btn btn-sm btn-danger w-100"
+                                        onClick={() => handleReplaceDocument('admissionLetter')}
+                                    >
+                                        <i className="bi bi-upload"></i> Upload Again
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="alert alert-warning">
                                     <i className="bi bi-exclamation-triangle"></i> Not uploaded
@@ -312,7 +381,7 @@ export const ApplicationPreview: React.FC = () => {
                         <div className="col-md-6">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="mb-0">Passport Photo</h6>
-                                {data.passport && (
+                                {data.passport && fileExistence.passport && (
                                     <button
                                         className="btn btn-sm btn-outline-primary"
                                         onClick={() => handleReplaceDocument('passport')}
@@ -321,12 +390,30 @@ export const ApplicationPreview: React.FC = () => {
                                     </button>
                                 )}
                             </div>
-                            {data.passport ? (
+                            {data.passport && fileExistence.passport ? (
                                 <DocumentPreview
                                     fileName={data.passport}
                                     type="passport"
                                     formNumber={formNumber}
                                 />
+                            ) : data.passport && !fileExistence.passport ? (
+                                <div className="alert alert-danger">
+                                    <i className="bi bi-exclamation-triangle-fill"></i> File Missing
+                                    <div className="mt-2">
+                                        <small className="text-muted d-block">
+                                            Database shows: <del>{data.passport}</del>
+                                        </small>
+                                        <small className="text-muted d-block mb-2">
+                                            File not found on server. Please upload again.
+                                        </small>
+                                    </div>
+                                    <button
+                                        className="btn btn-sm btn-danger w-100"
+                                        onClick={() => handleReplaceDocument('passport')}
+                                    >
+                                        <i className="bi bi-upload"></i> Upload Again
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="alert alert-warning">
                                     <i className="bi bi-exclamation-triangle"></i> Not uploaded

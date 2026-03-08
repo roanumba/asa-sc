@@ -14,6 +14,8 @@ interface Application {
     timeStamp: string;
     admissionLetter: string;
     passport: string;
+    letterExists: boolean;
+    passportExists: boolean;
 }
 
 interface PaginationInfo {
@@ -223,21 +225,29 @@ export const AdminDashboard: React.FC = () => {
                                                     <td>{formatDate(app.timeStamp)}</td>
                                                     <td>
                                                         <div className="d-flex gap-1 flex-wrap">
-                                                            {app.admissionLetter ? (
-                                                                <span className="badge bg-success" title="Admission letter uploaded">
+                                                            {app.letterExists ? (
+                                                                <span className="badge bg-success" title={app.admissionLetter}>
                                                                     Letter ✓
                                                                 </span>
+                                                            ) : app.admissionLetter ? (
+                                                                <span className="badge bg-warning text-dark" title={`File missing: ${app.admissionLetter}`}>
+                                                                    Letter ⚠
+                                                                </span>
                                                             ) : (
-                                                                <span className="badge bg-danger" title="Admission letter missing">
+                                                                <span className="badge bg-danger" title="Admission letter not uploaded">
                                                                     No Letter
                                                                 </span>
                                                             )}
-                                                            {app.passport ? (
-                                                                <span className="badge bg-success" title="Passport photo uploaded">
+                                                            {app.passportExists ? (
+                                                                <span className="badge bg-success" title={app.passport}>
                                                                     Photo ✓
                                                                 </span>
+                                                            ) : app.passport ? (
+                                                                <span className="badge bg-warning text-dark" title={`File missing: ${app.passport}`}>
+                                                                    Photo ⚠
+                                                                </span>
                                                             ) : (
-                                                                <span className="badge bg-danger" title="Passport photo missing">
+                                                                <span className="badge bg-danger" title="Passport photo not uploaded">
                                                                     No Photo
                                                                 </span>
                                                             )}
