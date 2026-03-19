@@ -10,27 +10,18 @@ export const RouteHome = () => {
 
    useEffect(() => {
       (async () => {
-         // Skip date-based routing for admin pages, preview, form, and last page
-         if (location.pathname.startsWith('/admin') ||
-             location.pathname.startsWith('/preview') ||
-             location.pathname === '/formViewPage' ||
-             location.pathname === '/lastViewPage') {
+         await store.init();
+         const today = dayjs();
+         if (today.isAfter(dayjs(store.CLOSING_DATE).add(24, 'hours'))) {
+            history.push('/closedPage');
             return;
          }
-
-         await store.init();
-      const today = dayjs();
-      if (today.isAfter(dayjs(store.CLOSING_DATE).add(24, 'hours'))) {
-         history.push('/closedPage');
-         return;
-      }
-      if (today.isBefore(dayjs(store.OPENING_DATE))) {
-         history.push('/openingPage');
-         return;
-      }
-
-      history.push('/');
-   })();
+         if (today.isBefore(dayjs(store.OPENING_DATE))) {
+            history.push('/openingPage');
+            return;
+         }
+         history.push('/');
+      })();
 
    }, []);
    return (

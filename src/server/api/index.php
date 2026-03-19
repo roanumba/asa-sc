@@ -72,6 +72,11 @@ try {
             break;
 
         // Application endpoints
+        case preg_match('#^/applications/init$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/applications.php';
+            initApplication($input);
+            break;
+
         case preg_match('#^/applications$#', $path) && $method === 'POST':
             require_once __DIR__ . '/applications.php';
             createApplication($input);

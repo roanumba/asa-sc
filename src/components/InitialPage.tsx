@@ -53,9 +53,7 @@ export const InitialPage = () => {
 
           
        const newForm=()=> {
-           store.formData = [];
-           store.formNo = '';
-           history.push('/formViewPage');
+           history.push('/new-form');
        }
 
        const viewApplication = () => {

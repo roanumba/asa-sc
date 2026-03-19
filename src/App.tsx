@@ -21,6 +21,7 @@ import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { ApplicationPreview } from "./components/ApplicationPreview";
 import { ApplicantLogin } from "./components/ApplicantLogin";
+import { NewFormGate } from "./components/NewFormGate";
 
 // Get basename from <base> tag and remove trailing slash for React Router
 const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
@@ -65,8 +66,9 @@ export const App=() =>{
             <Route exact path="/closedPage" component={ClosedPage} key={5}/>
             <Route exact path="/openingPage" component={OpeningPage} key={6}/>
 
-            {/* Applicant login */}
+            {/* Applicant login / new form */}
             <Route exact path="/applicant/login" component={ApplicantLogin} key={9}/>
+            <Route exact path="/new-form" component={NewFormGate} key={10}/>
 
             {/* Admin routes */}
             <Route exact path="/admin/login" component={AdminLogin} key={7}/>
