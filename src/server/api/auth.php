@@ -9,6 +9,57 @@ define('ADMIN_PASSWORD', env('ADMIN_PASSWORD'));
 define('ADMIN_2FA_EMAIL', env('ADMIN_2FA_EMAIL'));
 
 /**
+ * Applicant lookup: check email, then verify form number as passcode
+ */
+function lookupApplicant($input) {
+    if (!isset($input->email)) {
+        Response::validationError(['email'], 'Email is required');
+    }
+
+    $email = strtolower(trim($input->email));
+
+    // If input matches admin username or admin email, redirect to admin login
+    if ($email === strtolower(ADMIN_USERNAME) || $email === strtolower(ADMIN_2FA_EMAIL)) {
+        Response::success(['redirect' => 'admin'], 'Please use admin login');
+    }
+
+    require_once __DIR__ . '/../dbConnection.php';
+    $con = getConnection();
+
+    $stmt = mysqli_prepare($con, "SELECT formNumber, firstName FROM scholarship WHERE LOWER(email) = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+    mysqli_close($con);
+
+    if (!$row) {
+        // No record found — let frontend offer to start a new form
+        Response::success(['found' => false], 'No application found for this email');
+    }
+
+    // Record exists — if formNumber provided, verify it
+    if (isset($input->formNumber)) {
+        $formNumber = strtoupper(trim($input->formNumber));
+        if ($formNumber === strtoupper($row['formNumber'])) {
+            Response::success([
+                'found'      => true,
+                'verified'   => true,
+                'formNumber' => $row['formNumber'],
+                'firstName'  => $row['firstName']
+            ], 'Verified');
+        } else {
+            sleep(1);
+            Response::error('Invalid form number', 401);
+        }
+    }
+
+    // Record exists but no formNumber submitted yet — ask for it
+    Response::success(['found' => true, 'verified' => false], 'Application found. Please enter your form number.');
+}
+
+/**
  * Step 1: Verify credentials, generate OTP, send email
  */
 function handleLogin($input) {

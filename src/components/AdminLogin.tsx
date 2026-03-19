@@ -106,6 +106,14 @@ export const AdminLogin: React.FC = () => {
                                             </>
                                         ) : 'Continue'}
                                     </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-link w-100 mt-2"
+                                        onClick={() => history.push('/applicant/login')}
+                                        disabled={loading}
+                                    >
+                                        Back
+                                    </button>
                                 </form>
                             ) : (
                                 <form onSubmit={handleOtpSubmit}>

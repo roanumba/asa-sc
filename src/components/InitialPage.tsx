@@ -59,40 +59,7 @@ export const InitialPage = () => {
        }
 
        const viewApplication = () => {
-           setTimeout(() => {
-               dialog.showDialog('View Your Application',
-                   <Row>
-                       <Col sm={{ offset: 3, span: 6 }}>
-                           Enter Your Form Number
-                           <input
-                               id="inpViewFormNo"
-                               className="form-control form-control-lg"
-                               type="text"
-                               onChange={(e) => {
-                                   const formNo = e.target.value.toUpperCase();
-                                   store.formNo = formNo;
-                               }}
-                               placeholder="Form Number"
-                           />
-                       </Col>
-                   </Row>,
-                   <Button onClick={(e) => {
-                       e.preventDefault();
-                       if (store.formNo) {
-                           const formNo = store.formNo;
-                           // Navigate to preview page
-                           history.push(`/preview/${formNo}`);
-                           dialog.hideDialog();
-                           // Clear formNo and input field
-                           store.formNo = '';
-                           const input = document.getElementById("inpViewFormNo") as HTMLInputElement;
-                           if (input) input.value = '';
-                       } else {
-                           toastBar.error('Form Number is required to view application.');
-                       }
-                   }}>View Application</Button>
-               );
-           }, 10);
+           history.push('/applicant/login');
        }
 
        const upload = (type:string) => {
@@ -218,21 +185,11 @@ export const InitialPage = () => {
                 <Button className="btn btn-danger" onClick={newForm}> Start a new form</Button>
                 {' '}
                 <Button className="btn btn-primary" onClick={viewApplication}>
-                    View/Continue Application
+                    Login/Continue Application
                 </Button>
             </div>
 
 
-        </div>
-        <div style={{ textAlign: 'center', marginTop: -400, paddingBottom: 20 }}>
-            <Button
-                variant="link"
-                size="sm"
-                style={{ color: '#999', fontSize: 12 }}
-                onClick={() => history.push('/admin/login')}
-            >
-                Login
-            </Button>
         </div>
     </div>;
 }

@@ -37,6 +37,38 @@ class AuthService {
     }
 
     /**
+     * Look up applicant by email, optionally verify with form number
+     */
+    async lookupApplicant(email: string, formNumber?: string): Promise<{
+        success: boolean;
+        redirect?: 'admin';
+        found?: boolean;
+        verified?: boolean;
+        formNumber?: string;
+        firstName?: string;
+        error?: string;
+    }> {
+        try {
+            const body: any = { email };
+            if (formNumber) body.formNumber = formNumber;
+
+            const response = await fetchWithoutToken('/auth/lookup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            if (response && response.success) {
+                return { success: true, ...response.data };
+            } else {
+                return { success: false, error: response?.error || 'Lookup failed' };
+            }
+        } catch (error: any) {
+            return { success: false, error: error.message || 'Network error' };
+        }
+    }
+
+    /**
      * Login with username and password — returns step:'otp' if credentials valid
      */
     async login(username: string, password: string): Promise<{ success: boolean; step?: string; error?: string }> {

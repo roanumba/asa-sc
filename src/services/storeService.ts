@@ -47,6 +47,7 @@ export class StoreService {
  
 
     formNo = '';
+    prefillEmail = '';
     private _formData = [] as any[];
 
     async init() {
