@@ -224,14 +224,14 @@ export const InitialPage = () => {
 
 
         </div>
-        <div style={{ textAlign: 'center', marginTop: 30, paddingBottom: 20 }}>
+        <div style={{ textAlign: 'center', marginTop: -400, paddingBottom: 20 }}>
             <Button
                 variant="link"
                 size="sm"
                 style={{ color: '#999', fontSize: 12 }}
                 onClick={() => history.push('/admin/login')}
             >
-                Admin Login
+                Login
             </Button>
         </div>
     </div>;

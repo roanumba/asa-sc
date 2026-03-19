@@ -1,12 +1,11 @@
 <?php
 /**
  * Simple Session-Based Authentication
- * Uses hardcoded admin credentials (can be moved to database later)
  */
 
-// Hardcoded admin credentials (CHANGE THESE!)
-define('ADMIN_USERNAME', 'admin');
-define('ADMIN_PASSWORD_HASH', password_hash('Admin@123', PASSWORD_DEFAULT));
+// Admin credentials loaded from .env
+define('ADMIN_USERNAME', env('ADMIN_USERNAME'));
+define('ADMIN_PASSWORD', env('ADMIN_PASSWORD'));
 
 /**
  * Handle admin login
@@ -20,7 +19,7 @@ function handleLogin($input) {
     $password = $input->password;
 
     // Check credentials
-    if ($username === ADMIN_USERNAME && password_verify($password, ADMIN_PASSWORD_HASH)) {
+    if ($username === ADMIN_USERNAME && $password === ADMIN_PASSWORD) {
         // Set session
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_username'] = $username;
