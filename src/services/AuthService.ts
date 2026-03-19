@@ -37,9 +37,9 @@ class AuthService {
     }
 
     /**
-     * Login with username and password
+     * Login with username and password — returns step:'otp' if credentials valid
      */
-    async login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+    async login(username: string, password: string): Promise<{ success: boolean; step?: string; error?: string }> {
         try {
             const response = await fetchWithoutToken('/auth/login', {
                 method: 'POST',
@@ -50,6 +50,9 @@ class AuthService {
             });
 
             if (response && response.success) {
+                if (response.data.step === 'otp') {
+                    return { success: true, step: 'otp' };
+                }
                 this.isAuthenticated = true;
                 this.currentUser = {
                     username: response.data.username,
@@ -68,6 +71,32 @@ class AuthService {
                 success: false,
                 error: error.message || 'Network error'
             };
+        }
+    }
+
+    /**
+     * Submit OTP for 2FA verification
+     */
+    async verifyOtp(otp: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const response = await fetchWithoutToken('/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp }),
+            });
+
+            if (response && response.success) {
+                this.isAuthenticated = true;
+                this.currentUser = {
+                    username: response.data.username,
+                    role: response.data.role
+                };
+                return { success: true };
+            } else {
+                return { success: false, error: response?.error || 'Invalid verification code' };
+            }
+        } catch (error: any) {
+            return { success: false, error: error.message || 'Network error' };
         }
     }
 

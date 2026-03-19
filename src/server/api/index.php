@@ -51,6 +51,11 @@ try {
             handleLogin($input);
             break;
 
+        case preg_match('#^/auth/verify-otp$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/auth.php';
+            handleVerifyOtp($input);
+            break;
+
         case preg_match('#^/auth/logout$#', $path) && $method === 'POST':
             require_once __DIR__ . '/auth.php';
             handleLogout();
