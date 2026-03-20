@@ -12,7 +12,7 @@ const replacePublicUrl = (): Plugin => ({
 })
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     replacePublicUrl(),
@@ -32,7 +32,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    sourcemap: true,
+    sourcemap: mode === 'development',
     // Optimize chunk splitting
     rollupOptions: {
       output: {
@@ -52,4 +52,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'react-bootstrap', 'bootstrap']
   }
-})
+}))

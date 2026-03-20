@@ -97,10 +97,11 @@ function handleLogin($input) {
 
         $mailSent = mail($to, $subject, $message, $headers);
 
-        // Always write to file for local dev (harmless on production)
-        $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/otp_dev.txt';
-        $status = $mailSent ? 'mail-sent' : 'mail-failed';
-        file_put_contents($logFile, date('Y-m-d H:i:s') . ' | OTP: ' . $otp . ' | To: ' . $to . ' | ' . $status . PHP_EOL, FILE_APPEND);
+        if (!$mailSent && env('APP_ENV') === 'dev') {
+            $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/otp_dev.txt';
+            $status = $mailSent ? 'mail-sent' : 'mail-failed';
+            file_put_contents($logFile, date('Y-m-d H:i:s') . ' | OTP: ' . $otp . ' | To: ' . $to . ' | ' . $status . PHP_EOL, FILE_APPEND);
+        }
 
         Response::success(['step' => 'otp'], 'Verification code sent to admin email');
     } else {

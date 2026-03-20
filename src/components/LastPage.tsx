@@ -5,15 +5,6 @@ import { loadLastForm } from "../services/ServerService";
 import { dialog } from "../services/DialogService";
 import { toastBar } from "..";
 
-//create react funtion component naled LastPage.tsx
-/* const dataRows = [
-    {key: "Form Number", value: "Gj 1234"},
-    {key: "First Name", value: "Manuel"},
-    {key: "Last Name", value: "Gomez"},
-    {key: "Middle Name", value: "Gomez"},
-    {key: "Date of Birth", value: "10/10/2020"},
-
-]; */
 export const LastPage = () => {
     const history = useHistory();
 
@@ -123,5 +114,3 @@ export const LastPage = () => {
     </form>
 
 }
-
-// Path: src/components/Modal.tsx

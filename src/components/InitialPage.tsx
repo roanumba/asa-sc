@@ -4,7 +4,7 @@ import React, {useEffect,useState} from "react";
 import {useHistory} from "react-router-dom";
 import {store} from "../";
 import {dialog} from "../services/DialogService";
-import { findForm, get, uploadFile} from "../services/ServerService";
+import { findForm, uploadFile} from "../services/ServerService";
 import { toastBar } from "..";
 
 
@@ -33,22 +33,10 @@ export const InitialPage = () => {
 
     const history = useHistory();
 
-    // let formNo: any;
-
-
     useEffect(() => {
-         dialog.setBusy(true);
-         // Debug/test code - commented out
-         // get(`/api.php?id=266`).then((d)=>{
-         //     console.log(`====== ${JSON.stringify(d)}`)
-         // }).catch((e)=>{
-         //     console.error(e)
-         // })
-         setTimeout(()=>{
-             dialog.setBusy(false)
-         },1000)
+        dialog.setBusy(true);
+        setTimeout(() => { dialog.setBusy(false); }, 1000);
     }, []);
-    
 
 
           

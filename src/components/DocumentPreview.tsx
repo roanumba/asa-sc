@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '../utils/logger';
 
 interface DocumentPreviewProps {
   fileName: string;
@@ -43,7 +44,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         alert('Failed to generate download link: ' + (result.error || 'Unknown error'));
       }
     } catch (err) {
-      console.error('Error generating download token:', err);
+      logger.error('Error generating download token:', err);
       alert('Failed to open file');
     }
   };

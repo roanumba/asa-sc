@@ -8,10 +8,6 @@ $formNumber = $json->formNumber;
 $deadline = $json->deadline;
 $year = $json->year;
 
-// $formNumber = $_REQUEST['formNumber'];
-// $deadline = $_REQUEST['deadline'];
-// $year = $_REQUEST['year'];
-
 $row = findFormByFormNumber($formNumber);
 
 // Check if form was found

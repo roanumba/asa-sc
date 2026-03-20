@@ -7,7 +7,8 @@
   "scripts": {
     "clean": "rm -rf node_modules build pnpm-lock.yaml",
     "dev": "vite",
-    "build": "tsc && vite build && node scripts/copyProd.js",
+    "build": "tsc && vite build --mode development && node scripts/copyProd.js dev",
+    "build-prod": "tsc && vite build --mode production && node scripts/copyProd.js prod",
     "preview": "vite preview"
   },
   "dependencies": {

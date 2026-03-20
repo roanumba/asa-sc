@@ -72,8 +72,7 @@ function initApplication($input) {
         ini_set('smtp_port', '25');
         $mailSent = mail($email, $subject, $message, $headers);
 
-        // Dev fallback
-        if (!$mailSent) {
+        if (!$mailSent && env('APP_ENV') === 'dev') {
             $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/otp_dev.txt';
             file_put_contents($logFile,
                 date('Y-m-d H:i:s') . ' | NEW FORM: ' . $formNumber . ' | To: ' . $email . PHP_EOL,

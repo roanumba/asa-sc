@@ -6,6 +6,7 @@ import { Button, Col, Row } from "react-bootstrap";
 import {  toastBar } from "../index";
 import { dialog } from "../services/DialogService";
 import { saveForm } from "../services/ServerService";
+import { logger } from "../utils/logger";
 import { getTownsForLGA, lgaList } from "../services/storeService";
 import { isEmail } from "../utils/validation";
 import { getApiUrl } from "../utils/formHelpers";
@@ -154,7 +155,7 @@ export const FormView = () => {
     }
     const fillForm = () => {
         const formData: any = store.formData;
-        console.log(`formData: ${JSON.stringify(formData)}`);
+        logger.info(`formData: ${JSON.stringify(formData)}`);
 
         // Set basic text fields from stored data
         if (formData.firstName) setFirstName(formData.firstName);
@@ -284,10 +285,7 @@ export const FormView = () => {
                         body.scrollIntoView();
                         toastBar.error('Error saving form');
                     } else {
-                        console.log(resp);
-
-                        // const resp = {data:{formNumber:'1234'}}
-                        console.log(resp.data.formNumber);
+                        logger.info('form saved:', resp.data.formNumber);
                         store.formNo = resp.data.formNumber;
                         dialog.showDialog(
                             "Form Saved", <div>

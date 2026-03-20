@@ -1,4 +1,5 @@
 import { fetchWithoutToken } from "./ServerService";
+import { logger } from "../utils/logger";
 
 export interface AdminUser {
     username: string;
@@ -29,7 +30,7 @@ class AuthService {
                 return false;
             }
         } catch (error) {
-            console.error('Session check failed:', error);
+            logger.error('Session check failed:', error);
             this.isAuthenticated = false;
             this.currentUser = null;
             return false;
@@ -98,7 +99,7 @@ class AuthService {
                 };
             }
         } catch (error: any) {
-            console.error('Login error:', error);
+            logger.error('Login error:', error);
             return {
                 success: false,
                 error: error.message || 'Network error'
@@ -141,7 +142,7 @@ class AuthService {
                 method: 'POST',
             });
         } catch (error) {
-            console.error('Logout error:', error);
+            logger.error('Logout error:', error);
         } finally {
             this.isAuthenticated = false;
             this.currentUser = null;

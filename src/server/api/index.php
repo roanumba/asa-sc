@@ -4,9 +4,17 @@
  * Routes requests to appropriate handlers based on URL path and HTTP method
  */
 
-// Enable error reporting for development
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Load env early so APP_ENV is available
+require_once __DIR__ . '/../envLoader.php';
+
+// Enable error reporting in dev only
+if (env('APP_ENV') === 'dev') {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
 
 // CORS headers
 header('Access-Control-Allow-Origin: *');

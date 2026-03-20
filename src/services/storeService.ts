@@ -1,7 +1,8 @@
 import dayjs, { Dayjs } from "dayjs";
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-import {  fetchWithoutToken } from "./ServerService";
+import { fetchWithoutToken } from "./ServerService";
+import { logger } from "../utils/logger";
 import { toastBar } from "..";
 
 // Enable localized format plugin for LL format
@@ -62,7 +63,7 @@ export class StoreService {
                 throw new Error('Failed to load config');
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             toastBar.error("Error loading config");
         } finally {
             this.deadLineDate = dayjs(this.CLOSING_DATE, 'YYYY-MM-DD');

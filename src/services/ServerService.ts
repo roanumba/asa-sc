@@ -1,4 +1,5 @@
 import { dialog } from "./DialogService";
+import { logger } from "../utils/logger";
 
 // Get base URL from <base> tag or fallback to '/'
 const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
@@ -10,19 +11,19 @@ export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
     try {
         let data = null;
         const resp = await fetch(`${apiUrl}${path}`, init);
-        console.log(`fetching: ${path}, status: ${resp.status}`);
+        logger.info(`fetching: ${path}, status: ${resp.status}`);
         if (resp.ok) {
             data = await resp.json();
-            console.log('response data:', data);
+            logger.info('response data:', data);
         } else {
             const errorText = await resp.text();
-            console.error(`HTTP Error ${resp.status}:`, errorText);
+            logger.error(`HTTP Error ${resp.status}:`, errorText);
             return null;
         }
         return data;
     }
     catch (e) {
-        console.error('Fetch error:', e);
+        logger.error('Fetch error:', e);
         return Promise.reject(e);
     }
 };
@@ -33,7 +34,7 @@ export const fetchWithoutTokenText = async (path: string, init?: RequestInit) =>
         if (resp.ok) {
             data = await resp.text();
         }
-        console.log(`fetching: ${path}`);
+        logger.info(`fetching: ${path}`);
         return data;
     }
     catch (e) {
