@@ -22,8 +22,8 @@ class DialogService {
         return StaticDialog.show(params);
     };
 
-    showErrorDialog(title:ReactNode, message:ReactNode) {
-        return this.showDialog(title, message, null);
+    showErrorDialog(title:ReactNode, message:ReactNode,buttons:ReactNode=null) {
+        return this.showDialog(title, message, buttons);
     }
 }
 

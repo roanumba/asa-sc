@@ -3,6 +3,11 @@
  * Standardized API Response Utility
  * Provides consistent JSON response format across all endpoints
  */
+
+// Sentinel timestamp used to mark unverified (pending email verification) scholarship records.
+// Records with this value have not yet confirmed their email address.
+define('UNVERIFIED_TIMESTAMP', '1970-01-01 00:00:00');
+
 class Response {
     /**
      * Send success response
@@ -39,5 +44,19 @@ class Response {
             'message' => $message,
             'fields' => $fields
         ], 422);
+    }
+
+    /**
+     * Log email to dev inbox file (no-op in production)
+     */
+    public static function logEmail($label, $identifier, $to, $mailSent) {
+        if (env('APP_ENV') === 'dev') {
+            $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/email-box.txt';
+            $status = $mailSent ? 'mail-sent' : 'mail-failed';
+            file_put_contents($logFile,
+                date('Y-m-d H:i:s') . ' | ' . $label . ': ' . $identifier . ' | To: ' . $to . ' | ' . $status . PHP_EOL,
+                FILE_APPEND
+            );
+        }
     }
 }

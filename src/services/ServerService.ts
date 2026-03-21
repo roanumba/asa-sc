@@ -16,9 +16,13 @@ export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
             data = await resp.json();
             logger.info('response data:', data);
         } else {
-            const errorText = await resp.text();
-            logger.error(`HTTP Error ${resp.status}:`, errorText);
-            return null;
+            try {
+                data = await resp.json();
+            } catch {
+                data = { success: false, error: `HTTP ${resp.status}` };
+            }
+            data.status = resp.status;
+            logger.error(`HTTP Error ${resp.status}:`, data);
         }
         return data;
     }

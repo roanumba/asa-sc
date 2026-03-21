@@ -85,6 +85,11 @@ try {
             initApplication($input);
             break;
 
+        case preg_match('#^/applications/verify$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/applications.php';
+            verifyApplication($input);
+            break;
+
         case preg_match('#^/applications$#', $path) && $method === 'POST':
             require_once __DIR__ . '/applications.php';
             createApplication($input);

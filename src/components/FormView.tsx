@@ -8,7 +8,6 @@ import { dialog } from "../services/DialogService";
 import { saveForm } from "../services/ServerService";
 import { logger } from "../utils/logger";
 import { getTownsForLGA, lgaList } from "../services/storeService";
-import { isEmail } from "../utils/validation";
 import { getApiUrl } from "../utils/formHelpers";
 import { FormInput, FormTextarea, FormSelect } from "./FormComponents";
 
@@ -16,7 +15,6 @@ import { FormInput, FormTextarea, FormSelect } from "./FormComponents";
 
 export const FormView = () => {
     const history = useHistory();
-    const [submitDisabled, setSubmitDisabled] = useState(true);
     const [towns, setTowns] = useState([] as string[]);
 
     // Form state: Basic text fields
@@ -47,6 +45,27 @@ export const FormView = () => {
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [hasValidated, setHasValidated] = useState(false);
 
+
+    const validateFields = (): string[] => {
+        const errors: string[] = [];
+        if (!firstName) errors.push('firstName');
+        if (!lastName) errors.push('lastName');
+        if (!studentId) errors.push('studentId');
+        if (!collegeName) errors.push('collegeName');
+        if (!studentMajor) errors.push('studentMajor');
+        if (!gender) errors.push('gender');
+        if (!age) errors.push('age');
+        if (!phoneNumber) errors.push('phoneNumber');
+        if (!email) errors.push('email');
+        if (!address) errors.push('address');
+        if (!parentNames) errors.push('parentNames');
+        if (!admissionDate) errors.push('admissionDate');
+        if (!collegeAddress) errors.push('collegeAddress');
+        if (!profile) errors.push('profile');
+        if (!lga) errors.push('lga');
+        if (!homeTown) errors.push('homeTown');
+        return errors;
+}
     // LGA change handler with cascade reset
     const handleLgaChange = (selectedLga: string) => {
         setLga(selectedLga);
@@ -111,6 +130,22 @@ export const FormView = () => {
         });
     };
 
+
+
+    const showErrors = (errorElements: string[]) => {
+        dialog.showErrorDialog(
+            'Incomplete Form',
+            <div>
+                <b>{errorElements.length} field{errorElements.length > 1 ? 's are' : ' is'} incomplete.</b><br /><br />
+                If you leave now, your progress will be saved but your form will remain incomplete.<br /><br />
+                Please complete all fields before submitting.
+            </div>,
+            <>
+                <Button variant="secondary" onClick={() => { dialog.hideDialog(); history.push('/'); }}>Leave Anyway</Button>
+                <Button variant="primary" onClick={() => dialog.hideDialog()}>Continue Filling</Button>
+            </>
+        );
+    }
     // Show upload dialog with unified logic
     const showUploadDialog = (
         formNumber: string,
@@ -151,7 +186,15 @@ export const FormView = () => {
         fillForm();
     }, []);
     const closeView = () => {
-        history.push('/');
+        // Run the same validation as submit
+        const errors:string[]=validateFields();
+        if (errors.length > 0) {
+            setValidationErrors(errors);
+            setHasValidated(true);
+            showErrors(errors);
+        } else {
+            history.push('/');
+        }
     }
     const fillForm = () => {
         const formData: any = store.formData;
@@ -226,32 +269,10 @@ export const FormView = () => {
             // Collect location and agreement values
             jsonData.lga = lga;
             jsonData.homeTown = homeTown;
-            jsonData.aggreed = agreed;
+            jsonData.agreed = agreed;
 
             // Validate all required fields
-            if (!firstName) errorElements.push('firstName');
-            if (!lastName) errorElements.push('lastName');
-            if (!studentId) errorElements.push('studentId');
-            if (!collegeName) errorElements.push('collegeName');
-            if (!studentMajor) errorElements.push('studentMajor');
-            if (!gender) errorElements.push('gender');
-            if (!age) errorElements.push('age');
-            if (!phoneNumber) errorElements.push('phoneNumber');
-            if (!email) errorElements.push('email');
-            if (!address) errorElements.push('address');
-            if (!parentNames) errorElements.push('parentNames');
-            if (!admissionDate) errorElements.push('admissionDate');
-            if (!collegeAddress) errorElements.push('collegeAddress');
-            if (!profile) errorElements.push('profile');
-            if (!lga) errorElements.push('lga');
-            if (!homeTown) errorElements.push('homeTown');
-
-            // Validate email format
-            if (email && !isEmail(email)) {
-                if (!errorElements.includes('email')) {
-                    errorElements.push('email');
-                }
-            }
+            errorElements = validateFields();
 
             // Update validation state
             setValidationErrors(errorElements);
@@ -263,17 +284,7 @@ export const FormView = () => {
                 method = 'updateRecord';
             }
             if (errorElements.length > 0) {
-                dialog.showErrorDialog(
-                    "Form Error",
-                    errorElements.length + " fields are empty. Please fill them and resubmit"
-                );
-                body.scrollIntoView();
-            }
-            else if (!isEmail(jsonData.email)) {
-                dialog.showErrorDialog(
-                    "Form Error",
-                    <><b>  {jsonData.email}  </b> is not a valid email address.</>
-                );
+                showErrors(errorElements);
                 body.scrollIntoView();
             }
             else {
@@ -378,9 +389,9 @@ export const FormView = () => {
                         <div className="col-sm-4">
                             <input type="email" name="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`form-control input-sm ${getValidationClass('email')}`}
-                                placeholder="Current email is very important to communicate with you" />
+                                readOnly
+                                className="form-control input-sm"
+                                style={{ backgroundColor: '#e9ecef' }} />
 
                         </div>
                     </div>
@@ -455,10 +466,7 @@ export const FormView = () => {
                                 <b style={{ marginRight: 20 }}>Agree</b>
                                 <input type="checkbox" id="agreed" name="aggreed"
                                     checked={agreed}
-                                    onChange={(e) => {
-                                        setAgreed(e.target.checked);
-                                        setSubmitDisabled(!e.target.checked);
-                                    }}
+                                    onChange={(e) => setAgreed(e.target.checked)}
                                     className='input-md' />
                             </div>
                         </div>
@@ -467,7 +475,7 @@ export const FormView = () => {
                         <Col sm={{ offset: 10, span: 4 }}>
                             <button type="submit" style={{ margin: 5 }}
                                 className="btn btn-success"
-                                disabled={submitDisabled}
+                                disabled={!agreed}
                                 onClick={(e) => {
                                     e.preventDefault();
                                     sendForm("submitForm");
@@ -488,7 +496,5 @@ export const FormView = () => {
 
     </form>;
 };
-
-
 
 

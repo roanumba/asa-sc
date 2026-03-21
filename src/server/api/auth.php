@@ -26,7 +26,7 @@ function lookupApplicant($input) {
     require_once __DIR__ . '/../dbConnection.php';
     $con = getConnection();
 
-    $stmt = mysqli_prepare($con, "SELECT formNumber, firstName FROM scholarship WHERE LOWER(email) = ? LIMIT 1");
+    $stmt = mysqli_prepare($con, "SELECT formNumber, firstName FROM scholarship WHERE LOWER(email) = ? AND timeStamp != '" . UNVERIFIED_TIMESTAMP . "' LIMIT 1");
     mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -97,11 +97,7 @@ function handleLogin($input) {
 
         $mailSent = mail($to, $subject, $message, $headers);
 
-        if (!$mailSent && env('APP_ENV') === 'dev') {
-            $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/otp_dev.txt';
-            $status = $mailSent ? 'mail-sent' : 'mail-failed';
-            file_put_contents($logFile, date('Y-m-d H:i:s') . ' | OTP: ' . $otp . ' | To: ' . $to . ' | ' . $status . PHP_EOL, FILE_APPEND);
-        }
+        Response::logEmail('OTP', $otp, $to, $mailSent);
 
         Response::success(['step' => 'otp'], 'Verification code sent to admin email');
     } else {
