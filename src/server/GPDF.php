@@ -1,8 +1,13 @@
 <?php
 
-require_once('./lib/fpdf.php');
+use Fpdf\Fpdf as FPDF;
 
-require_once('dbConnection.php');
+// Use Composer-managed FPDF; point to bundled fonts for backward compatibility
+if (!defined('FPDF_FONTPATH')) {
+    define('FPDF_FONTPATH', __DIR__ . '/lib/font/');
+}
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/dbConnection.php';
 
 class PDF extends FPDF {
 
@@ -17,15 +22,18 @@ function replaceWitheSpace($txt) {
     return str_replace(array("\r", "\n"), ' ', $txt);
 }
 
-$formYear = filter_input(INPUT_POST, "year");
+$formYear = filter_input(INPUT_POST, "year", FILTER_VALIDATE_INT);
 $accessCode = filter_input(INPUT_POST, "accd");
 if ($accessCode) {
     $pdf = new PDF();
 
     $con = getConnection();
-    $sql = "select * from  scholarship where timeStamp>='".
-        $formYear."-01-01 00:00:00' and timeStamp<'".$formYear."-12-31 23:59:59'";
-    $result = mysqli_query($con, $sql);
+    $start = $formYear . '-01-01 00:00:00';
+    $end   = $formYear . '-12-31 23:59:59';
+    $stmt = mysqli_prepare($con, "SELECT * FROM scholarship WHERE timeStamp >= ? AND timeStamp < ?");
+    mysqli_stmt_bind_param($stmt, "ss", $start, $end);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     while ($rows = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 
@@ -122,6 +130,7 @@ if ($accessCode) {
             $pdf->writeText(50, 160, "No Admission Letter");
         }
     }
+    mysqli_stmt_close($stmt);
     mysqli_close($con);
     $pdf->Output();
  

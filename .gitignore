@@ -28,6 +28,9 @@
 # PHP environment file (contains sensitive credentials)
 src/server/.env
 
+# PHP Composer dependencies
+src/server/vendor/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

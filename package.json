@@ -9,7 +9,11 @@
     "dev": "vite",
     "build": "tsc && vite build --mode development && node scripts/copyProd.js dev",
     "build-prod": "tsc && vite build --mode production && node scripts/copyProd.js prod",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "php:install": "cd src/server && /Applications/MAMP/bin/php/php8.3.30/bin/php /Applications/MAMP/bin/php/composer install",
+    "php:update": "cd src/server && /Applications/MAMP/bin/php/php8.3.30/bin/php /Applications/MAMP/bin/php/composer update",
+    "php:clean": "rm -rf src/server/vendor src/server/composer.lock",
+    "php:fresh": "pnpm php:clean && pnpm php:install"
   },
   "dependencies": {
     "@types/bootstrap": "^5.2.10",

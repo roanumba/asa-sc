@@ -1,0 +1,21 @@
+{
+    "name": "asa-sc/scholarship-api",
+    "description": "ASA-SC / ASWA-SC Scholarship Application API",
+    "type": "project",
+    "require": {
+        "php": "^8.0",
+        "fpdf/fpdf": "^1.86",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "classmap": [
+            "GPDF.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.0"
+        }
+    }
+}

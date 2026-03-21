@@ -4,6 +4,9 @@
  * Routes requests to appropriate handlers based on URL path and HTTP method
  */
 
+// Composer autoloader (FPDF, PHPMailer, etc.)
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // Load env early so APP_ENV is available
 require_once __DIR__ . '/../envLoader.php';
 
