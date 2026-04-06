@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/envLoader.php';
 include_once 'dbConnection.php';
 
 $request_body = file_get_contents('php://input');
@@ -121,14 +123,9 @@ function sendMail($row, $formNumber,$year,$deadline)
                 . ' to upload your admission letter by '.$deadline.'.'
                 . '</div>';
         }
-        $Header = 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $Header .= 'From: info@africangalore.com' . "\r\n";
-        ini_set('SMTP', "relay-hosting.secureserver.net");
-        ini_set('smtp_port', "25");
-        $success = mail($to, $subject, $message, $Header);
-
-        $e = error_get_last();
-        $error = $e !== null ? $e['message'] : null;
+        require_once __DIR__ . '/api/utils/mailService.php';
+        $success = sendEmail($to, $subject, $message);
+        $error   = $success ? null : 'Failed to send email';
 
     } catch (Exception $ex) {
         $error = $ex->getMessage();

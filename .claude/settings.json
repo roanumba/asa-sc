@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:ccrd.unizik.edu.ng)",
+      "WebFetch(domain:nigerianinformer.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:anambraeast.an.gov.ng)",
+      "WebFetch(domain:anambrawest.an.gov.ng)",
+      "WebFetch(domain:colossusgists.blogspot.com)"
+    ]
+  }
+}

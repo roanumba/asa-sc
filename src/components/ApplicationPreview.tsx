@@ -86,7 +86,7 @@ export const ApplicationPreview: React.FC = () => {
         if (appData.admissionLetter) {
             try {
                 const response = await fetch(
-                    `${baseUrl}${cleanBasePath}/server/viewFile.php?form=${formNumber}&type=admissionLetter`,
+                    `${baseUrl}${cleanBasePath}/server/api/files/view?form=${formNumber}&type=admissionLetter`,
                     { method: 'HEAD' }
                 );
                 existence.admissionLetter = response.ok;
@@ -99,7 +99,7 @@ export const ApplicationPreview: React.FC = () => {
         if (appData.passport) {
             try {
                 const response = await fetch(
-                    `${baseUrl}${cleanBasePath}/server/viewFile.php?form=${formNumber}&type=passport`,
+                    `${baseUrl}${cleanBasePath}/server/api/files/view?form=${formNumber}&type=passport`,
                     { method: 'HEAD' }
                 );
                 existence.passport = response.ok;

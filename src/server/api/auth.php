@@ -85,17 +85,13 @@ function handleLogin($input) {
             error_log('2FA: ADMIN_2FA_EMAIL is not set in .env');
             Response::error('Admin email not configured', 500);
         }
-        $subject = 'Admin Login - Verification Code';
-        $message = '<div style="font-size:16px;text-align:center;">'
+        require_once __DIR__ . '/utils/mailService.php';
+        $subject  = 'Admin Login - Verification Code';
+        $body     = '<div style="font-size:16px;text-align:center;">'
             . 'Your login verification code is: <b style="font-size:24px;">' . $otp . '</b><br>'
             . 'This code expires in 5 minutes.'
             . '</div>';
-        $headers  = 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= 'From: info@africangalore.com' . "\r\n";
-        ini_set('SMTP', 'relay-hosting.secureserver.net');
-        ini_set('smtp_port', '25');
-
-        $mailSent = mail($to, $subject, $message, $headers);
+        $mailSent = sendEmail($to, $subject, $body);
 
         Response::logEmail('OTP', $otp, $to, $mailSent);
 

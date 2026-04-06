@@ -22,23 +22,21 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
   // Simple thumbnail URL - no token required
   const fileType = type === 'passport' ? 'passport' : 'admissionLetter';
-  const thumbnailUrl = `${baseUrl}${cleanBasePath}/server/viewFile.php?form=${formNumber}&type=${fileType}`;
+  const thumbnailUrl = `${baseUrl}${cleanBasePath}/server/api/files/view?form=${formNumber}&type=${fileType}`;
 
   // Handle full-size view - generates token and opens in new tab
   const handleViewFullSize = async () => {
     try {
-      const response = await fetch(`${baseUrl}${cleanBasePath}/server/generateDownloadToken.php`, {
+      const response = await fetch(`${baseUrl}${cleanBasePath}/server/api/files/token`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formNumber, fileType })
       });
 
       const result = await response.json();
 
-      if (result.success && result.token) {
-        const downloadUrl = `${baseUrl}${cleanBasePath}${result.downloadUrl}`;
+      if (result.success && result.data?.token) {
+        const downloadUrl = `${baseUrl}${cleanBasePath}/server/api/files/download?token=${result.data.token}`;
         window.open(downloadUrl, '_blank');
       } else {
         alert('Failed to generate download link: ' + (result.error || 'Unknown error'));

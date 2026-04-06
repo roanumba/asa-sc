@@ -22,9 +22,11 @@ function replaceWitheSpace($txt) {
     return str_replace(array("\r", "\n"), ' ', $txt);
 }
 
+if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'GPDF.php'):
+
 $formYear = filter_input(INPUT_POST, "year", FILTER_VALIDATE_INT);
 $accessCode = filter_input(INPUT_POST, "accd");
-if ($accessCode) {
+if ($accessCode==='AsaGpdf||') {
     $pdf = new PDF();
 
     $con = getConnection();
@@ -91,16 +93,16 @@ if ($accessCode) {
 
         $letter = $rows["admissionLetter"];
         $file_ext = pathinfo($letter, PATHINFO_EXTENSION);
-        // $file_ext = strtolower(end(explode('.', $letter)));
-        if ($file_ext && $file_ext !== "pdf") {
+        $letterPath = __DIR__ . '/images/' . $letter;
+        if ($file_ext && $file_ext !== "pdf" && file_exists($letterPath)) {
             $pdf->AddPage();
-            $pdf->Image('images/' . $letter, 10, 10, 200, 350);
+            $pdf->Image($letterPath, 10, 10, 200, 350);
             $pdf->SetFont('Arial', 'I', 12);
             $pdf->writeText(150, 10, $rows["formNumber"]);
-        } else if ($file_ext && $file_ext === "pdf") {
+        } else if ($file_ext && $file_ext === "pdf" && file_exists($letterPath)) {
 
             try {
-                $pagecount = $pdf->setSourceFile('images/' . $letter);
+                $pagecount = $pdf->setSourceFile($letterPath);
                 $counter = 1;
                 while ($counter <= $pagecount) {
                     $pdf->AddPage();
@@ -136,10 +138,12 @@ if ($accessCode) {
  
 } else {
     echo '
-<form action="testFpdf.php" method="post">
+<form action="GPDF.php" method="post">
     Year <input type="text"  name="year" >
     Enter Access Code <input type="password" name="accd" min="11"><input type="submit" >
-</form>      
+</form>
      ';
 }
+
+endif;
 ?>

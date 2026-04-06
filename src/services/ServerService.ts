@@ -151,8 +151,7 @@ export const uploadFile = (formNumber: string, file: string, callback: (resp: an
             formData.append('formNumber', formNumber);
             formData.append('uploadType', file);
 
-            // File upload still uses legacy endpoint for now
-            const response = await fetch(`${legacyApiUrl}/fileUpload.php`, {
+            const response = await fetch(`${apiUrl}/files/upload`, {
                 method: 'POST',
                 body: formData
             });

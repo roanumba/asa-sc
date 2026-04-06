@@ -103,6 +103,29 @@ export const AdminDashboard: React.FC = () => {
         window.open(`${apiUrl}/admin/export`, '_blank');
     };
 
+    const handleGeneratePDF = () => {
+        const year = new Date().getFullYear();
+        const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
+        const url = `${baseName}server/GPDF.php`;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        form.target = '_blank';
+        const yearInput = document.createElement('input');
+        yearInput.type = 'hidden';
+        yearInput.name = 'year';
+        yearInput.value = String(year);
+        const acdInput = document.createElement('input');
+        acdInput.type = 'hidden';
+        acdInput.name = 'accd';
+        acdInput.value = 'AsaGpdf||';
+        form.appendChild(yearInput);
+        form.appendChild(acdInput);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -156,9 +179,12 @@ export const AdminDashboard: React.FC = () => {
                                 )}
                             </form>
                         </div>
-                        <div className="col-md-4 text-end">
+                        <div className="col-md-4 text-end d-flex gap-2 justify-content-end">
                             <button className="btn btn-success" onClick={handleExport}>
                                 <i className="bi bi-download"></i> Export CSV
+                            </button>
+                            <button className="btn btn-secondary" onClick={handleGeneratePDF}>
+                                <i className="bi bi-file-pdf"></i> Generate PDF
                             </button>
                         </div>
                     </div>

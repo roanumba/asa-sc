@@ -87,20 +87,16 @@ function initApplication($input) {
         mysqli_close($con);
 
         // Email the form number — user must enter it to verify email and activate record
-        require_once __DIR__ . '/../envLoader.php';
+        require_once __DIR__ . '/utils/mailService.php';
         $subject = 'ASA-SC/ASWA-SC Scholarship - Verify Your Email';
-        $message = '<div style="font-size:16px;text-align:center;">'
+        $body    = '<div style="font-size:16px;text-align:center;">'
             . 'Dear ' . htmlspecialchars($firstName) . ',<br><br>'
             . 'Your scholarship application has been started.<br>'
             . 'Your form number is: <b style="font-size:22px;">' . $formNumber . '</b><br><br>'
             . 'Please enter this number on the verification page to confirm your email and activate your application.<br>'
             . 'If you did not request this, you can ignore this email.'
             . '</div>';
-        $headers  = 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= 'From: info@africangalore.com' . "\r\n";
-        ini_set('SMTP', 'relay-hosting.secureserver.net');
-        ini_set('smtp_port', '25');
-        $mailSent = mail($email, $subject, $message, $headers);
+        $mailSent = sendEmail($email, $subject, $body);
 
         Response::logEmail('NEW FORM', $formNumber, $email, $mailSent);
 

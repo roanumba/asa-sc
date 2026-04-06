@@ -133,6 +133,27 @@ try {
             updateConfig($input);
             break;
 
+        // File endpoints
+        case preg_match('#^/files/upload$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/files.php';
+            handleFileUpload();
+            break;
+
+        case preg_match('#^/files/token$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/files.php';
+            handleCreateToken();
+            break;
+
+        case preg_match('#^/files/view$#', $path) && $method === 'GET':
+            require_once __DIR__ . '/files.php';
+            handleViewFile();
+            break;
+
+        case preg_match('#^/files/download$#', $path) && $method === 'GET':
+            require_once __DIR__ . '/files.php';
+            handleDownloadFile();
+            break;
+
         // Config endpoint (public)
         case preg_match('#^/config$#', $path) && $method === 'GET':
             $config = json_decode(file_get_contents(__DIR__ . '/../config.json'), true);

@@ -105,7 +105,7 @@ export const FormView = () => {
                     formData.append('formNumber', formNumber);
                     formData.append('uploadType', uploadType);
 
-                    const response = await fetch(`${getApiUrl()}/fileUpload.php`, {
+                    const response = await fetch(`${getApiUrl()}/api/files/upload`, {
                         method: 'POST',
                         body: formData
                     });

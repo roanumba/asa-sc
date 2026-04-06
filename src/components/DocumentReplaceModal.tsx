@@ -86,7 +86,7 @@ export const DocumentReplaceModal: React.FC<DocumentReplaceModalProps> = ({
             const basePath = document.querySelector('base')?.getAttribute('href') ?? '/';
             const cleanBasePath = basePath.replace(/\/$/, '');
 
-            const response = await fetch(`${baseUrl}${cleanBasePath}/server/fileUpload.php`, {
+            const response = await fetch(`${baseUrl}${cleanBasePath}/server/api/files/upload`, {
                 method: 'POST',
                 body: formData
             });
