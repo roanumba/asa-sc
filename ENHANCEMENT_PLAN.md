@@ -1,8 +1,8 @@
 # ASA Scholarship Application Enhancement Plan
 
-**Status:** Partially Implemented (Phase 1 Complete)
+**Status:** Phase 1 Complete (Admin Security & Features Fully Implemented)
 **Created:** February 2026
-**Last Updated:** February 2026
+**Last Updated:** June 2026
 
 ---
 
@@ -442,35 +442,31 @@ When implementing remaining phases:
 
 ### Current Limitations
 1. **Authentication:**
-   - Hardcoded admin credentials (need admin_users table)
+   - ✅ Database-backed admin users (removed hardcoded admin credentials)
    - No candidate authentication yet
    - No audit logging
 
 2. **File Uploads:**
-   - Still using legacy endpoint
+   - Still using legacy endpoint for candidate submissions
    - Post-submission upload flow (not inline)
-   - No preview functionality
+   - ✅ Detail view has document previews (image inline, PDF viewer), with full validation of physical file existence. Candidate entry inline previews are pending.
 
 3. **Admin Dashboard:**
    - No statistics/charts yet
-   - No application detail view
-   - No document preview in dashboard
+   - ✅ Full application detail view implemented (displays all 21 fields and document previews)
    - No audit log
 
 4. **Configuration:**
-   - config.json still used (should be in database)
-   - No UI for opening/closing date management yet
+   - ✅ Dynamic settings management UI implemented for admins to update opening/closing dates directly in `config.json`
 
 ### Recommended Next Steps
-1. **High Priority:**
-   - Implement admin_users table and move away from hardcoded credentials
-   - Add application detail view to dashboard
-   - Implement config UI in admin panel
+1. **High Priority (Phase 2):**
+   - Add candidate landing experience and authentication (magic links)
+   - Implement inline file uploads with pre-submission preview
 
 2. **Medium Priority:**
-   - Add candidate authentication (magic links)
-   - Implement inline file uploads with preview
-   - Add statistics dashboard
+   - Add statistics dashboard for admins
+   - Migrate `config.json` to a database settings table
 
 3. **Low Priority:**
    - Audit logging
@@ -527,6 +523,14 @@ When implementing remaining phases:
 ---
 
 ## Change Log
+
+### June 2026 (Phase 1 Completion)
+- ✅ **Database Admin Auth**: Created the `admin_users` table schema, database migration scripts, and refactored authentication backend (`auth.php`) to validate sessions against it. Removed all hardcoded admin credentials.
+- ✅ **Application Detail Page**: Created `AdminApplicationDetail.tsx` displaying all 21 form fields and rendering inline previews of passport photos and admission letters (supporting PDF viewers and images).
+- ✅ **Document existence checks**: Added server-side check using `file_exists()` for files returned by the single-application API, ensuring the UI hides previews/download links and renders warning badges if files are missing from disk.
+- ✅ **Settings UI**: Added Settings modal to `AdminDashboard.tsx` to read and write opening and closing dates via `/api/admin/config` JSON file APIs.
+- ✅ **App Initialization Fix**: Refactored `App.tsx` and `storeService.ts` to block rendering with a spinner until the configuration has loaded, preventing visual bugs where the homepage rendered empty parameters.
+- ✅ **MAMP Environment sync**: Integrated automated build and synchronization mechanism to transfer updated backend PHP modules and assets to the MAMP server automatically.
 
 ### February 2026
 - ✅ Implemented REST API architecture
