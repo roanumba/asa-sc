@@ -25,6 +25,11 @@ interface PaginationInfo {
     totalPages: number;
 }
 
+interface SystemConfig {
+    openingDate: string;
+    closingDate: string;
+}
+
 export const AdminDashboard: React.FC = () => {
     const [applications, setApplications] = useState<Application[]>([]);
     const [pagination, setPagination] = useState<PaginationInfo>({
@@ -37,6 +42,10 @@ export const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const history = useHistory();
+
+    const [showSettings, setShowSettings] = useState(false);
+    const [config, setConfig] = useState<SystemConfig>({ openingDate: '', closingDate: '' });
+    const [savingConfig, setSavingConfig] = useState(false);
 
     useEffect(() => {
         checkAuth();
@@ -91,6 +100,44 @@ export const AdminDashboard: React.FC = () => {
         history.push('/admin/login');
     };
 
+    const handleOpenSettings = async () => {
+        setShowSettings(true);
+        try {
+            const response = await fetchWithoutToken('/admin/config');
+            if (response && response.success) {
+                setConfig({
+                    openingDate: response.data.OPENING_DATE || '',
+                    closingDate: response.data.CLOSING_DATE || ''
+                });
+            }
+        } catch (err) {
+            console.error('Failed to load config', err);
+        }
+    };
+
+    const handleSaveConfig = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSavingConfig(true);
+        try {
+            const response = await fetchWithoutToken('/admin/config', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            
+            if (response && response.success) {
+                setShowSettings(false);
+            } else {
+                alert(response?.error || 'Failed to update configuration');
+            }
+        } catch (err) {
+            console.error('Failed to save config', err);
+            alert('An error occurred while saving configuration');
+        } finally {
+            setSavingConfig(false);
+        }
+    };
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPagination({ ...pagination, page: 1 });
@@ -143,7 +190,10 @@ export const AdminDashboard: React.FC = () => {
                 <div className="col">
                     <h2>Admin Dashboard</h2>
                 </div>
-                <div className="col-auto">
+                <div className="col-auto d-flex gap-2">
+                    <button className="btn btn-outline-secondary" onClick={handleOpenSettings}>
+                        <i className="bi bi-gear"></i> Settings
+                    </button>
                     <button className="btn btn-outline-danger" onClick={handleLogout}>
                         Logout
                     </button>
@@ -227,6 +277,7 @@ export const AdminDashboard: React.FC = () => {
                                             <th>College</th>
                                             <th>Submitted</th>
                                             <th>Documents</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -278,6 +329,14 @@ export const AdminDashboard: React.FC = () => {
                                                                 </span>
                                                             )}
                                                         </div>
+                                                    </td>
+                                                    <td>
+                                                        <button 
+                                                            className="btn btn-sm btn-outline-primary"
+                                                            onClick={() => history.push(`/admin/application/${app.formNumber}`)}
+                                                        >
+                                                            View
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -346,6 +405,50 @@ export const AdminDashboard: React.FC = () => {
                         </nav>
                     )}
                 </>
+            )}
+
+            {/* Settings Modal */}
+            {showSettings && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">System Settings</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowSettings(false)}></button>
+                            </div>
+                            <form onSubmit={handleSaveConfig}>
+                                <div className="modal-body">
+                                    <div className="mb-3">
+                                        <label className="form-label">Opening Date</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            value={config.openingDate}
+                                            onChange={(e) => setConfig({ ...config, openingDate: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">Closing Date</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            value={config.closingDate}
+                                            onChange={(e) => setConfig({ ...config, closingDate: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowSettings(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" disabled={savingConfig}>
+                                        {savingConfig ? 'Saving...' : 'Save Settings'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -3,10 +3,7 @@
  * Simple Session-Based Authentication with 2FA
  */
 
-// Admin credentials loaded from .env
-define('ADMIN_USERNAME', env('ADMIN_USERNAME'));
-define('ADMIN_PASSWORD', env('ADMIN_PASSWORD'));
-define('ADMIN_2FA_EMAIL', env('ADMIN_2FA_EMAIL'));
+// Admin credentials are now validated against the admin_users table in the database
 
 /**
  * Applicant lookup: check email, then verify form number as passcode
@@ -18,13 +15,21 @@ function lookupApplicant($input) {
 
     $email = strtolower(trim($input->email));
 
-    // If input matches admin username or admin email, redirect to admin login
-    if ($email === strtolower(ADMIN_USERNAME) || $email === strtolower(ADMIN_2FA_EMAIL)) {
-        Response::success(['redirect' => 'admin'], 'Please use admin login');
-    }
-
     require_once __DIR__ . '/../dbConnection.php';
     $con = getConnection();
+
+    // Check if input is an admin email or username
+    $stmtAdmin = mysqli_prepare($con, "SELECT id FROM admin_users WHERE LOWER(email) = ? OR LOWER(username) = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmtAdmin, "ss", $email, $email);
+    mysqli_stmt_execute($stmtAdmin);
+    $adminResult = mysqli_stmt_get_result($stmtAdmin);
+    $isAdmin = mysqli_fetch_assoc($adminResult);
+    mysqli_stmt_close($stmtAdmin);
+    
+    if ($isAdmin) {
+        mysqli_close($con);
+        Response::success(['redirect' => 'admin'], 'Please use admin login');
+    }
 
     $stmt = mysqli_prepare($con, "SELECT formNumber, firstName FROM scholarship WHERE LOWER(email) = ? AND timeStamp != '" . UNVERIFIED_TIMESTAMP . "' LIMIT 1");
     mysqli_stmt_bind_param($stmt, "s", $email);
@@ -70,7 +75,31 @@ function handleLogin($input) {
     $username = trim($input->username);
     $password = $input->password;
 
-    if ($username === ADMIN_USERNAME && $password === ADMIN_PASSWORD) {
+    require_once __DIR__ . '/../dbConnection.php';
+    $con = getConnection();
+
+    $stmt = mysqli_prepare($con, "SELECT password_hash, email FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1");
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+    
+    $isValid = false;
+    $adminEmail = null;
+    
+    if ($row && password_verify($password, $row['password_hash'])) {
+        $isValid = true;
+        $adminEmail = $row['email'];
+        // Update last_login
+        $updateStmt = mysqli_prepare($con, "UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE username = ?");
+        mysqli_stmt_bind_param($updateStmt, "s", $username);
+        mysqli_stmt_execute($updateStmt);
+        mysqli_stmt_close($updateStmt);
+    }
+    mysqli_close($con);
+
+    if ($isValid) {
         // Generate 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
@@ -80,9 +109,9 @@ function handleLogin($input) {
         $_SESSION['2fa_username'] = $username;
 
         // Send OTP email
-        $to = ADMIN_2FA_EMAIL;
+        $to = $adminEmail;
         if (!$to) {
-            error_log('2FA: ADMIN_2FA_EMAIL is not set in .env');
+            error_log('2FA: Admin email not configured in database for user ' . $username);
             Response::error('Admin email not configured', 500);
         }
         require_once __DIR__ . '/utils/mailService.php';

@@ -47,13 +47,17 @@ export class StoreService {
     deadLineDate = dayjs();
     deadline = '';
     year = 0;
- 
+    hasInitialized = false;
+
 
     formNo = '';
     prefillEmail = '';
     private _formData = [] as any[];
 
     async init() {
+        if (this.hasInitialized) {
+            return;
+        }
         try {
             // Use new REST API endpoint for config
             const resp:any= await fetchWithoutToken('/config');
@@ -71,6 +75,7 @@ export class StoreService {
             this.deadLineDate = dayjs(this.CLOSING_DATE, 'YYYY-MM-DD');
             this.deadline = this.deadLineDate.format('LL');
             this.year = this.deadLineDate.year();
+            this.hasInitialized = true;
         }
     }
     //load config from server

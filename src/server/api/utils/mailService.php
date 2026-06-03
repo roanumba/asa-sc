@@ -41,6 +41,12 @@ function createMailer(): PHPMailer {
  * Errors are logged automatically.
  */
 function sendEmail(string $to, string $subject, string $htmlBody): bool {
+    $appEnv = env('APP_ENV');
+    if ($appEnv === 'dev' || $appEnv === 'development') {
+        // Skip actual SMTP connection in dev mode to prevent timeouts
+        return true;
+    }
+
     try {
         $mail = createMailer();
         $mail->addAddress($to);

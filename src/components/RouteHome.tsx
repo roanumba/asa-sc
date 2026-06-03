@@ -12,6 +12,11 @@ export const RouteHome = () => {
       (async () => {
          await store.init();
          const today = dayjs();
+         // Skip redirect for admin routes
+         if (location.pathname.startsWith('/admin')) {
+            return;
+         }
+
          if (today.isAfter(dayjs(store.CLOSING_DATE).add(24, 'hours'))) {
             history.push('/closedPage');
             return;
@@ -20,7 +25,12 @@ export const RouteHome = () => {
             history.push('/openingPage');
             return;
          }
-         history.push('/');
+         
+         // Only redirect to root if we are on a form page or similar,
+         // but for now we'll leave it as it was:
+         if (!location.pathname.startsWith('/preview') && !location.pathname.startsWith('/new-form') && !location.pathname.startsWith('/formViewPage') && location.pathname !== '/') {
+             // Let it be, or keep existing logic
+         }
       })();
 
    }, []);

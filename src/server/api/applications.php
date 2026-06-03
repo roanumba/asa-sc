@@ -268,6 +268,10 @@ function getApplication($formNumber) {
         mysqli_close($con);
 
         if ($application) {
+            $application['letterExists'] = !empty($application['admissionLetter']) &&
+                file_exists(__DIR__ . '/../images/' . $application['admissionLetter']);
+            $application['passportExists'] = !empty($application['passport']) &&
+                file_exists(__DIR__ . '/../passports/' . $application['passport']);
             Response::success($application);
         } else {
             Response::error('Application not found', 404);

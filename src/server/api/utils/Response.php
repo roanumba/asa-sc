@@ -50,7 +50,8 @@ class Response {
      * Log email to dev inbox file (no-op in production)
      */
     public static function logEmail($label, $identifier, $to, $mailSent) {
-        if (env('APP_ENV') === 'dev') {
+        $appEnv = env('APP_ENV');
+        if ($appEnv === 'dev' || $appEnv === 'development') {
             $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/email-box.txt';
             $status = $mailSent ? 'mail-sent' : 'mail-failed';
             file_put_contents($logFile,

@@ -28,6 +28,13 @@ export default defineConfig(({ mode }) => ({
     // Watch options for better HMR reliability
     watch: {
       usePolling: false,
+    },
+    // Proxy API requests to the PHP backend (MAMP usually runs on port 8888 or 80)
+    proxy: {
+      '^/asa-aswa/server/.*': {
+        target: 'http://localhost:8888', // Change to http://localhost if your MAMP uses port 80
+        changeOrigin: true,
+      }
     }
   },
   build: {
