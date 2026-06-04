@@ -27,7 +27,7 @@ const UPLOAD_DIRS = [
 function resolveFilePath(string $fileType, string $fileName): string {
     $dir = UPLOAD_DIRS[$fileType] ?? null;
     if (!$dir) return '';
-    return __DIR__ . '/../../' . $dir . '/' . $fileName;
+    return __DIR__ . '/../' . $dir . '/' . $fileName;
 }
 
 function serveFile(string $filePath, string $disposition = 'inline'): void {
@@ -46,6 +46,9 @@ function serveFile(string $filePath, string $disposition = 'inline'): void {
         header('Cache-Control: private, max-age=300');
     } else {
         header('Cache-Control: private, no-cache, no-store, must-revalidate');
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+        exit;
     }
     readfile($filePath);
     exit;
@@ -89,7 +92,7 @@ function saveUploadedFile(string $tmpPath, string $formNumber, string $uploadTyp
 
     $fileType = ($uploadType === 'passport') ? 'passport' : 'admissionLetter';
     $dir      = UPLOAD_DIRS[$fileType];
-    $basePath = __DIR__ . '/../../' . $dir . '/';
+    $basePath = __DIR__ . '/../' . $dir . '/';
 
     // Clean up old files for this form
     foreach (glob($basePath . $formNumber . '_*') ?: [] as $old) {

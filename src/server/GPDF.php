@@ -1,15 +1,20 @@
 <?php
-
-use Fpdf\Fpdf as FPDF;
-
-// Use Composer-managed FPDF; point to bundled fonts for backward compatibility
-if (!defined('FPDF_FONTPATH')) {
-    define('FPDF_FONTPATH', __DIR__ . '/lib/font/');
-}
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/dbConnection.php';
 
-class PDF extends FPDF {
+// Map the modern Fpdf namespace to the global FPDF class that FPDI expects
+if (!class_exists('FPDF')) {
+    class_alias('Fpdf\\Fpdf', 'FPDF');
+}
+
+use setasign\Fpdi\Fpdi;
+
+// Use Composer-managed FPDF/FPDI; point to bundled fonts for backward compatibility
+if (!defined('FPDF_FONTPATH')) {
+    define('FPDF_FONTPATH', __DIR__ . '/lib/font/');
+}
+
+class PDF extends Fpdi {
 
     function writeText($x, $y, $txt) {
         $this->SetXY($x, $y);

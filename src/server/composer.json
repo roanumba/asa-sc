@@ -5,7 +5,8 @@
     "require": {
         "php": "^8.0",
         "fpdf/fpdf": "^1.86",
-        "phpmailer/phpmailer": "^6.9"
+        "phpmailer/phpmailer": "^6.9",
+        "setasign/fpdi": "^2.6"
     },
     "autoload": {
         "classmap": [

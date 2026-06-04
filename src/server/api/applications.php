@@ -307,6 +307,21 @@ function updateApplication($formNumber, $input) {
         $studentMajor = $input->studentMajor ?? '';
         $profile = $input->profile ?? '';
 
+        // Verify email uniqueness before updating (excluding the current record itself)
+        if (!empty($email)) {
+            $emailLower = strtolower(trim($email));
+            $emailCheck = mysqli_prepare($con, "SELECT formNumber FROM scholarship WHERE LOWER(email) = ? AND formNumber != ? LIMIT 1");
+            mysqli_stmt_bind_param($emailCheck, "ss", $emailLower, $formNumber);
+            mysqli_stmt_execute($emailCheck);
+            $res = mysqli_stmt_get_result($emailCheck);
+            if (mysqli_num_rows($res) > 0) {
+                mysqli_stmt_close($emailCheck);
+                mysqli_close($con);
+                Response::error('This email address is already associated with another application.', 409);
+            }
+            mysqli_stmt_close($emailCheck);
+        }
+
         $sql = "UPDATE scholarship SET
             firstName = ?, middleName = ?, lastName = ?, gender = ?, age = ?,
             address = ?, phoneNumber = ?, email = ?, parentNames = ?,

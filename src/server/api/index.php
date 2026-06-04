@@ -21,7 +21,7 @@ if (env('APP_ENV') === 'dev') {
 
 // CORS headers
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, HEAD, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Handle preflight OPTIONS request
@@ -144,7 +144,7 @@ try {
             handleCreateToken();
             break;
 
-        case preg_match('#^/files/view$#', $path) && $method === 'GET':
+        case preg_match('#^/files/view$#', $path) && ($method === 'GET' || $method === 'HEAD'):
             require_once __DIR__ . '/files.php';
             handleViewFile();
             break;
