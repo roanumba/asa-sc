@@ -40,9 +40,9 @@ if ($accessCode==='AsaGpdf||') {
     $stmt = mysqli_prepare($con, "SELECT * FROM scholarship WHERE timeStamp >= ? AND timeStamp < ?");
     mysqli_stmt_bind_param($stmt, "ss", $start, $end);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $candidates = safe_fetch_all($stmt);
 
-    while ($rows = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+    foreach ($candidates as $rows) {
 
         $pdf->AddPage();
 

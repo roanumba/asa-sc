@@ -26,8 +26,8 @@ function initApplication($input) {
         $check = mysqli_prepare($con, "SELECT formNumber FROM scholarship WHERE LOWER(email) = ? AND timeStamp != '" . UNVERIFIED_TIMESTAMP . "' LIMIT 1");
         mysqli_stmt_bind_param($check, "s", $email);
         mysqli_stmt_execute($check);
-        $checkResult = mysqli_stmt_get_result($check);
-        if (mysqli_num_rows($checkResult) > 0) {
+        $checkRow = safe_fetch_assoc($check);
+        if ($checkRow) {
             mysqli_stmt_close($check);
             mysqli_close($con);
             Response::error('An application already exists for this email. Please use Login/Continue Application.', 409);
@@ -42,8 +42,8 @@ function initApplication($input) {
         $lnLower = strtolower($lastName);
         mysqli_stmt_bind_param($nameCheck, "ss", $fnLower, $lnLower);
         mysqli_stmt_execute($nameCheck);
-        $nameResult = mysqli_stmt_get_result($nameCheck);
-        if (mysqli_num_rows($nameResult) > 0) {
+        $nameRow = safe_fetch_assoc($nameCheck);
+        if ($nameRow) {
             mysqli_stmt_close($nameCheck);
             mysqli_close($con);
             Response::error(
@@ -100,6 +100,11 @@ function initApplication($input) {
 
         Response::logEmail('NEW FORM', $formNumber, $email, $mailSent);
 
+        if (!$mailSent) {
+            // Log form number to PHP error log as emergency fallback if email fails
+            error_log("EMERGENCY Candidate Form: Email failed to send to $email. Form Number: $formNumber");
+        }
+
         Response::success([
             'firstName' => $firstName,
             'lastName'  => $lastName,
@@ -133,8 +138,7 @@ function verifyApplication($input) {
         );
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_assoc($result);
+        $row = safe_fetch_assoc($stmt);
         mysqli_stmt_close($stmt);
 
         if (!$row) {
@@ -261,8 +265,7 @@ function getApplication($formNumber) {
         $stmt = mysqli_prepare($con, $sql);
         mysqli_stmt_bind_param($stmt, "s", $formNumber);
         mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $application = mysqli_fetch_assoc($result);
+        $application = safe_fetch_assoc($stmt);
 
         mysqli_stmt_close($stmt);
         mysqli_close($con);
@@ -313,8 +316,8 @@ function updateApplication($formNumber, $input) {
             $emailCheck = mysqli_prepare($con, "SELECT formNumber FROM scholarship WHERE LOWER(email) = ? AND formNumber != ? LIMIT 1");
             mysqli_stmt_bind_param($emailCheck, "ss", $emailLower, $formNumber);
             mysqli_stmt_execute($emailCheck);
-            $res = mysqli_stmt_get_result($emailCheck);
-            if (mysqli_num_rows($res) > 0) {
+            $emailRow = safe_fetch_assoc($emailCheck);
+            if ($emailRow) {
                 mysqli_stmt_close($emailCheck);
                 mysqli_close($con);
                 Response::error('This email address is already associated with another application.', 409);

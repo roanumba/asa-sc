@@ -61,7 +61,7 @@ function getFileNameFromDb(string $formNumber, string $fileType): string|false {
     $stmt = mysqli_prepare($con, "SELECT {$fileType} AS fn FROM scholarship WHERE formNumber = ?");
     mysqli_stmt_bind_param($stmt, "s", $formNumber);
     mysqli_stmt_execute($stmt);
-    $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    $row = safe_fetch_assoc($stmt);
     mysqli_stmt_close($stmt);
     mysqli_close($con);
     return (!empty($row['fn'])) ? $row['fn'] : false;

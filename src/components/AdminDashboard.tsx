@@ -191,6 +191,9 @@ export const AdminDashboard: React.FC = () => {
                     <h2>Admin Dashboard</h2>
                 </div>
                 <div className="col-auto d-flex gap-2">
+                    <button className="btn btn-outline-primary" onClick={() => history.push('/')}>
+                        <i className="bi bi-house"></i> Home
+                    </button>
                     <button className="btn btn-outline-secondary" onClick={handleOpenSettings}>
                         <i className="bi bi-gear"></i> Settings
                     </button>

@@ -48,8 +48,8 @@ function listApplications($params) {
             array_unshift($refs, $bindTypes);
             call_user_func_array([$stmt, 'bind_param'], $refs);
             mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            $totalCount = mysqli_fetch_assoc($result)['total'];
+            $countRow = safe_fetch_assoc($stmt);
+            $totalCount = $countRow['total'];
             mysqli_stmt_close($stmt);
         } else {
             $result = mysqli_query($con, $countSql);
@@ -58,6 +58,7 @@ function listApplications($params) {
 
         // Get paginated data
         $sql = "SELECT * FROM scholarship $whereClause ORDER BY timeStamp DESC LIMIT $limit OFFSET $offset";
+        $applications = [];
         if ($bindTypes) {
             $stmt = mysqli_prepare($con, $sql);
             $refs = [];
@@ -67,24 +68,23 @@ function listApplications($params) {
             array_unshift($refs, $bindTypes);
             call_user_func_array([$stmt, 'bind_param'], $refs);
             mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
+            $applications = safe_fetch_all($stmt);
+            mysqli_stmt_close($stmt);
         } else {
             $result = mysqli_query($con, $sql);
+            while ($row = mysqli_fetch_assoc($result)) {
+                $applications[] = $row;
+            }
         }
 
-        $applications = [];
-        while ($row = mysqli_fetch_assoc($result)) {
+        foreach ($applications as &$row) {
             // Check physical file existence
             $row['letterExists'] = !empty($row['admissionLetter']) &&
                 file_exists(__DIR__ . '/../images/' . $row['admissionLetter']);
             $row['passportExists'] = !empty($row['passport']) &&
                 file_exists(__DIR__ . '/../passports/' . $row['passport']);
-            $applications[] = $row;
         }
 
-        if (isset($stmt)) {
-            mysqli_stmt_close($stmt);
-        }
         mysqli_close($con);
 
         Response::success([

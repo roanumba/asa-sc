@@ -45,7 +45,7 @@ function validateFileToken(string $token): array|false {
     );
     mysqli_stmt_bind_param($stmt, "s", $token);
     mysqli_stmt_execute($stmt);
-    $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    $row = safe_fetch_assoc($stmt);
     mysqli_stmt_close($stmt);
     mysqli_close($con);
     return $row ?: false;

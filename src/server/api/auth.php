@@ -22,8 +22,7 @@ function lookupApplicant($input) {
     $stmtAdmin = mysqli_prepare($con, "SELECT id FROM admin_users WHERE LOWER(email) = ? OR LOWER(username) = ? LIMIT 1");
     mysqli_stmt_bind_param($stmtAdmin, "ss", $email, $email);
     mysqli_stmt_execute($stmtAdmin);
-    $adminResult = mysqli_stmt_get_result($stmtAdmin);
-    $isAdmin = mysqli_fetch_assoc($adminResult);
+    $isAdmin = safe_fetch_assoc($stmtAdmin);
     mysqli_stmt_close($stmtAdmin);
     
     if ($isAdmin) {
@@ -34,8 +33,7 @@ function lookupApplicant($input) {
     $stmt = mysqli_prepare($con, "SELECT formNumber, firstName FROM scholarship WHERE LOWER(email) = ? AND timeStamp != '" . UNVERIFIED_TIMESTAMP . "' LIMIT 1");
     mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
+    $row = safe_fetch_assoc($stmt);
     mysqli_stmt_close($stmt);
     mysqli_close($con);
 
@@ -81,8 +79,7 @@ function handleLogin($input) {
     $stmt = mysqli_prepare($con, "SELECT password_hash, email FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1");
     mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
+    $row = safe_fetch_assoc($stmt);
     mysqli_stmt_close($stmt);
     
     $isValid = false;
@@ -123,6 +120,11 @@ function handleLogin($input) {
         $mailSent = sendEmail($to, $subject, $body);
 
         Response::logEmail('OTP', $otp, $to, $mailSent);
+
+        if (!$mailSent) {
+            // Log OTP code to PHP error log as emergency fallback if SMTP fails
+            error_log("EMERGENCY 2FA: Email failed to send to $to. Verification Code: $otp");
+        }
 
         Response::success(['step' => 'otp'], 'Verification code sent to admin email');
     } else {

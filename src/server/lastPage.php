@@ -71,8 +71,7 @@ function findFormByFormNumber($formNo)
             return array('error' => TRUE, 'errorMsg' => 'Database query error');
         }
 
-        $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+        $row = safe_fetch_assoc($stmt);
 
         mysqli_stmt_close($stmt);
         mysqli_close($con);

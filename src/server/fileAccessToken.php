@@ -79,8 +79,7 @@ function validateToken($token) {
     mysqli_stmt_bind_param($stmt, "s", $token);
     mysqli_stmt_execute($stmt);
 
-    $result = mysqli_stmt_get_result($stmt);
-    $tokenData = mysqli_fetch_assoc($result);
+    $tokenData = safe_fetch_assoc($stmt);
 
     mysqli_stmt_close($stmt);
     mysqli_close($con);
@@ -148,8 +147,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'fileAccessToken.php') {
 
         mysqli_stmt_bind_param($stmt, "s", $formNumber);
         mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $formData = mysqli_fetch_assoc($result);
+        $formData = safe_fetch_assoc($stmt);
 
         mysqli_stmt_close($stmt);
         mysqli_close($con);

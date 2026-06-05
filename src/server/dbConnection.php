@@ -29,5 +29,84 @@ function getConnection() {
 
     return $con;
 }
+
+/**
+ * Driver-independent helper to fetch a single row as an associative array from a prepared statement.
+ * Works even when mysqlnd is not available.
+ */
+function safe_fetch_assoc($stmt) {
+    if (function_exists('mysqli_stmt_get_result')) {
+        $res = mysqli_stmt_get_result($stmt);
+        return mysqli_fetch_assoc($res);
+    }
+    
+    // Fallback using bind_result
+    $meta = mysqli_stmt_result_metadata($stmt);
+    if (!$meta) {
+        return null;
+    }
+    
+    $fields = mysqli_fetch_fields($meta);
+    $row = [];
+    $params = [];
+    foreach ($fields as $field) {
+        $params[] = &$row[$field->name];
+    }
+    
+    call_user_func_array('mysqli_stmt_bind_result', array_merge([$stmt], $params));
+    
+    $copy = null;
+    if (mysqli_stmt_fetch($stmt)) {
+        $copy = [];
+        foreach ($row as $key => $val) {
+            $copy[$key] = $val;
+        }
+    }
+    
+    mysqli_free_result($meta);
+    return $copy;
+}
+
+/**
+ * Driver-independent helper to fetch all rows as an array of associative arrays from a prepared statement.
+ * Works even when mysqlnd is not available.
+ */
+function safe_fetch_all($stmt) {
+    if (function_exists('mysqli_stmt_get_result')) {
+        $res = mysqli_stmt_get_result($stmt);
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($res)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+    
+    // Fallback using bind_result
+    $meta = mysqli_stmt_result_metadata($stmt);
+    if (!$meta) {
+        return [];
+    }
+    
+    $fields = mysqli_fetch_fields($meta);
+    $row = [];
+    $params = [];
+    foreach ($fields as $field) {
+        $params[] = &$row[$field->name];
+    }
+    
+    call_user_func_array('mysqli_stmt_bind_result', array_merge([$stmt], $params));
+    
+    $rows = [];
+    while (mysqli_stmt_fetch($stmt)) {
+        $copy = [];
+        foreach ($row as $key => $val) {
+            $copy[$key] = $val;
+        }
+        $rows[] = $copy;
+    }
+    
+    mysqli_free_result($meta);
+    return $rows;
+}
 ?>
 

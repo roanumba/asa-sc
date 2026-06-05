@@ -52,7 +52,7 @@ class Response {
     public static function logEmail($label, $identifier, $to, $mailSent) {
         $appEnv = env('APP_ENV');
         if ($appEnv === 'dev' || $appEnv === 'development') {
-            $logFile = '/Applications/MAMP/htdocs/asa-aswa/server/email-box.txt';
+            $logFile = __DIR__ . '/../../../email-box.txt';
             $status = $mailSent ? 'mail-sent' : 'mail-failed';
             file_put_contents($logFile,
                 date('Y-m-d H:i:s') . ' | ' . $label . ': ' . $identifier . ' | To: ' . $to . ' | ' . $status . PHP_EOL,

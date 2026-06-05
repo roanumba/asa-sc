@@ -12,26 +12,33 @@ use PHPMailer\PHPMailer\Exception as MailException;
 function createMailer(): PHPMailer {
     $mail = new PHPMailer(true);
 
-    $mail->isSMTP();
-    $mail->Host    = env('SMTP_HOST', 'relay-hosting.secureserver.net');
-    $mail->Port    = (int) env('SMTP_PORT', 25);
+    $mailerType = env('MAIL_MAILER', 'smtp');
+    if ($mailerType === 'mail') {
+        $mail->isMail();
+    } else {
+        $mail->isSMTP();
+        $mail->Host    = env('SMTP_HOST', 'relay-hosting.secureserver.net');
+        $mail->Port    = (int) env('SMTP_PORT', 25);
+        $mail->Timeout = 10; // 10-second timeout to prevent hanging
+
+        // Enable SMTP auth when credentials are provided (e.g. Gmail in dev)
+        $smtpUser = env('SMTP_USER');
+        $smtpPass = env('SMTP_PASS');
+        if ($smtpUser && $smtpPass) {
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $smtpUser;
+            $mail->Password   = $smtpPass;
+            $mail->SMTPSecure = (int) env('SMTP_PORT', 25) === 465
+                ? PHPMailer::ENCRYPTION_SMTPS
+                : PHPMailer::ENCRYPTION_STARTTLS;
+        } else {
+            $mail->SMTPAuth = false;
+        }
+    }
+
     $mail->isHTML(true);
     $mail->CharSet = 'UTF-8';
     $mail->setFrom(env('EMAIL_FROM', 'info@africangalore.com'));
-
-    // Enable SMTP auth when credentials are provided (e.g. Gmail in dev)
-    $smtpUser = env('SMTP_USER');
-    $smtpPass = env('SMTP_PASS');
-    if ($smtpUser && $smtpPass) {
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $smtpUser;
-        $mail->Password   = $smtpPass;
-        $mail->SMTPSecure = (int) env('SMTP_PORT', 25) === 465
-            ? PHPMailer::ENCRYPTION_SMTPS
-            : PHPMailer::ENCRYPTION_STARTTLS;
-    } else {
-        $mail->SMTPAuth = false;
-    }
 
     return $mail;
 }
