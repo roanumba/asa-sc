@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <base href="%PUBLIC_URL%/" />
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        path = path.replace(/\/index\.html$/, '');
+        var routes = [
+          /\/admin\/dashboard\/?$/,
+          /\/admin\/login\/?$/,
+          /\/admin\/application\/[^/]+\/?$/,
+          /\/formViewPage\/?$/,
+          /\/preview\/[^/]+\/?$/,
+          /\/lastViewPage\/?$/,
+          /\/closedPage\/?$/,
+          /\/openingPage\/?$/,
+          /\/applicant\/login\/?$/,
+          /\/new-form\/?$/
+        ];
+        for (var i = 0; i < routes.length; i++) {
+          if (routes[i].test(path)) {
+            path = path.replace(routes[i], '');
+            break;
+          }
+        }
+        if (!path.endsWith('/')) {
+          path += '/';
+        }
+        var baseTag = document.createElement('base');
+        baseTag.setAttribute('href', path);
+        document.head.insertBefore(baseTag, document.head.firstChild);
+      })();
+    </script>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="ASA Application" />
-    <link rel="apple-touch-icon" href="/logo192.png" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>ASA App</title>
   </head>
   <body>
