@@ -37,7 +37,7 @@ require_once __DIR__ . '/../dbConnection.php';
 
 // Parse request path
 $requestUri = $_SERVER['REQUEST_URI'];
-$basePath = '/asa-aswa/server/api';
+$basePath = dirname($_SERVER['SCRIPT_NAME']);
 $path = str_replace($basePath, '', parse_url($requestUri, PHP_URL_PATH));
 $method = $_SERVER['REQUEST_METHOD'];
 

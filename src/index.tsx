@@ -1,5 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
+// Dynamically configure <base> tag to match current folder URL path
+const getDynamicBasePath = () => {
+    let path = window.location.pathname;
+    // Remove filename like index.html if present
+    path = path.replace(/\/index\.html$/, '');
+    // Ensure it ends with a slash
+    if (!path.endsWith('/')) {
+        path += '/';
+    }
+    return path;
+};
+
+let baseTag = document.querySelector('base');
+if (!baseTag) {
+    const base = getDynamicBasePath();
+    baseTag = document.createElement('base');
+    baseTag.setAttribute('href', base);
+    document.head.appendChild(baseTag);
+}
+
 import './index.css';
 import {App} from './App';
 import reportWebVitals from './reportWebVitals';

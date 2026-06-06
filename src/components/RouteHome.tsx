@@ -17,23 +17,29 @@ export const RouteHome = () => {
             return;
          }
 
-         if (today.isAfter(dayjs(store.CLOSING_DATE).add(24, 'hours'))) {
-            history.push('/closedPage');
+         const isClosed = today.isAfter(dayjs(store.CLOSING_DATE).add(24, 'hours'));
+         const isNotOpenedYet = today.isBefore(dayjs(store.OPENING_DATE));
+
+         if (isClosed) {
+            if (location.pathname !== '/closedPage') {
+               history.push('/closedPage');
+            }
             return;
          }
-         if (today.isBefore(dayjs(store.OPENING_DATE))) {
-            history.push('/openingPage');
+         if (isNotOpenedYet) {
+            if (location.pathname !== '/openingPage') {
+               history.push('/openingPage');
+            }
             return;
          }
          
-         // Only redirect to root if we are on a form page or similar,
-         // but for now we'll leave it as it was:
-         if (!location.pathname.startsWith('/preview') && !location.pathname.startsWith('/new-form') && !location.pathname.startsWith('/formViewPage') && location.pathname !== '/') {
-             // Let it be, or keep existing logic
+         // If application is active, redirect away from opening/closed status pages
+         if (location.pathname === '/openingPage' || location.pathname === '/closedPage') {
+            history.push('/');
          }
       })();
 
-   }, []);
+   }, [location.pathname]);
    return (
       <div />
    );

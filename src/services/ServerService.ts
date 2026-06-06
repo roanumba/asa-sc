@@ -2,15 +2,16 @@ import { dialog } from "./DialogService";
 import { logger } from "../utils/logger";
 
 // Get base URL from <base> tag or fallback to '/'
-const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
+const getBaseName = () => document.querySelector('base')?.getAttribute('href') ?? '/';
 
-// Use new REST API endpoints
-const apiUrl = `${baseName}server/api`;
-const legacyApiUrl = `${baseName}server`;
+// Use new REST API endpoints dynamically to prevent static import ordering issues
+const getApiUrl = () => `${getBaseName()}server/api`;
+const getLegacyApiUrl = () => `${getBaseName()}server`;
+
 export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
     try {
         let data = null;
-        const resp = await fetch(`${apiUrl}${path}`, init);
+        const resp = await fetch(`${getApiUrl()}${path}`, init);
         logger.info(`fetching: ${path}, status: ${resp.status}`);
         if (resp.ok) {
             data = await resp.json();
@@ -34,7 +35,7 @@ export const fetchWithoutToken = async (path: string, init?: RequestInit) => {
 export const fetchWithoutTokenText = async (path: string, init?: RequestInit) => {
     try {
         let data = null;
-        const resp = await fetch(`${apiUrl}${path}`, init);
+        const resp = await fetch(`${getApiUrl()}${path}`, init);
         if (resp.ok) {
             data = await resp.text();
         }
@@ -151,7 +152,7 @@ export const uploadFile = (formNumber: string, file: string, callback: (resp: an
             formData.append('formNumber', formNumber);
             formData.append('uploadType', file);
 
-            const response = await fetch(`${apiUrl}/files/upload`, {
+            const response = await fetch(`${getApiUrl()}/files/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -232,7 +233,7 @@ export const findForm = async (formNo: string, callback: (d: any, err: any) => v
 export const loadLastForm = async (params: any, callback: (d: any, err: any) => void) => {
     try {
         // LastPage still uses legacy endpoint - call it directly without going through REST API
-        const resp = await fetch(`${legacyApiUrl}/lastPage.php`, {
+        const resp = await fetch(`${getLegacyApiUrl()}/lastPage.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

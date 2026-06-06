@@ -1,4 +1,4 @@
-import {Button, Col, Row} from "react-bootstrap";
+import {Button, Col, Row, Card} from "react-bootstrap";
 import React, {useEffect,useState} from "react";
 // import {navigateTo} from "../App";
 import {useHistory} from "react-router-dom";
@@ -167,15 +167,43 @@ export const InitialPage = () => {
             </div>
             <div style={{fontSize: 20}}>Welcome to the {store.year} Scholarship form page.</div>
 
-            <div style={{fontSize: 16}}>
-                <Button className="btn btn-danger" onClick={newForm}> Start a new form</Button>
-                {' '}
-                <Button className="btn btn-primary" onClick={viewApplication}>
-                    Login/Continue Application
-                </Button>
-            </div>
-
-
+            <Row className="justify-content-center mt-4 g-4" style={{ maxWidth: "800px", margin: "20px auto 0 auto" }}>
+                <Col md={6} className="mb-3">
+                    <Card className="h-100 shadow-sm" style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #e0e0e0", textAlign: "left" }}>
+                        <Card.Body className="d-flex flex-column p-4">
+                            <div className="mb-2" style={{ fontSize: "2rem" }}>✍️</div>
+                            <Card.Title className="fw-bold" style={{ color: "#0d6efd" }}>Start New Application</Card.Title>
+                            <Card.Text className="text-muted flex-grow-1" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                                Select this option if you are applying for the first time. You will enter your basic information and receive a Form Number via email to verify your address and activate your application.
+                            </Card.Text>
+                            <Button className="btn btn-primary w-100 mt-3 py-2 fw-semibold" onClick={newForm} style={{ borderRadius: "8px" }}>
+                                Start New Form
+                            </Button>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                
+                <Col md={6} className="mb-3">
+                    <Card className="h-100 shadow-sm" style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #e0e0e0", textAlign: "left" }}>
+                        <Card.Body className="d-flex flex-column p-4">
+                            <div className="mb-2" style={{ fontSize: "2rem" }}>📂</div>
+                            <Card.Title className="fw-bold" style={{ color: "#198754" }}>Continue / Complete Form</Card.Title>
+                            <Card.Text className="text-muted flex-grow-1" style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                                Select this option if you need to:
+                                <ul className="mt-2 mb-0 ps-3" style={{ fontSize: "13.5px" }}>
+                                    <li>Complete unfinished form entries</li>
+                                    <li>Upload your <strong style={{ color: "#dc3545" }}>Letter of Admission</strong></li>
+                                    <li>Upload your <strong style={{ color: "#dc3545" }}>Passport Sized Photo</strong></li>
+                                    <li>Review or edit your existing details</li>
+                                </ul>
+                            </Card.Text>
+                            <Button className="btn btn-success w-100 mt-3 py-2 fw-semibold" onClick={viewApplication} style={{ borderRadius: "8px" }}>
+                                Login & Continue
+                            </Button>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
         </div>
     </div>;
 }

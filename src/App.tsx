@@ -14,10 +14,6 @@ import { NewFormGate } from "./components/NewFormGate";
 import { AdminApplicationDetail } from "./components/AdminApplicationDetail";
 import { store } from "./";
 
-// Get basename from <base> tag and remove trailing slash for React Router
-const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
-const baseName = baseHref.replace(/\/$/, '') || '/';
-
 export const App = () => {
   const [initialized, setInitialized] = useState(false);
 
@@ -37,8 +33,11 @@ export const App = () => {
     );
   }
 
+  const baseName = document.querySelector('base')?.getAttribute('href') ?? '/';
+  const basename = baseName.replace(/\/$/, '');
+
   return (
-    <Router basename={baseName}>
+    <Router basename={basename}>
       <Switch>
         <Route exact path="/" component={InitialPage} key={1} />
         <Route exact path="/formViewPage" component={FormView} key={2} />
