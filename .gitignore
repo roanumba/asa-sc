@@ -27,6 +27,7 @@
 
 # PHP environment file (contains sensitive credentials)
 src/server/.env
+src/server/.env.*
 
 # PHP Composer dependencies
 src/server/vendor/

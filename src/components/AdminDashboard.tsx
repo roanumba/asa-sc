@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { authService } from '../services/AuthService';
 import { fetchWithoutToken } from '../services/ServerService';
+import { store } from '../index';
 
 interface Application {
     formNumber: string;
@@ -126,6 +127,7 @@ export const AdminDashboard: React.FC = () => {
             });
             
             if (response && response.success) {
+                await store.init(true);
                 setShowSettings(false);
             } else {
                 alert(response?.error || 'Failed to update configuration');

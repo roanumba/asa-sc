@@ -13,6 +13,7 @@ import { ApplicantLogin } from "./components/ApplicantLogin";
 import { NewFormGate } from "./components/NewFormGate";
 import { AdminApplicationDetail } from "./components/AdminApplicationDetail";
 import { store } from "./";
+declare const __BUILD_TIME__: string;
 
 export const App = () => {
   const [initialized, setInitialized] = useState(false);
@@ -58,6 +59,18 @@ export const App = () => {
         <Redirect to="/" />
       </Switch>
       <RouteHome />
+              <div style={{
+            position: "fixed",
+            bottom: "10px",
+            right: "15px",
+            fontSize: "11px",
+            color: "#888888",
+            pointerEvents: "none",
+            userSelect: "none",
+            zIndex: 1000
+        }}>
+            Version: {__BUILD_TIME__}
+        </div>
     </Router>
   );
 }

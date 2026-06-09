@@ -54,8 +54,8 @@ export class StoreService {
     prefillEmail = '';
     private _formData = [] as any[];
 
-    async init() {
-        if (this.hasInitialized) {
+    async init(force = false) {
+        if (this.hasInitialized && !force) {
             return;
         }
         try {

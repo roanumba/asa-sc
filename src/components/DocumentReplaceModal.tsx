@@ -93,11 +93,11 @@ export const DocumentReplaceModal: React.FC<DocumentReplaceModalProps> = ({
 
             const result = await response.json();
 
-            if (result.error === false) {
+            if (result.success) {
                 onSuccess();
                 handleClose();
             } else {
-                setError(result.message || 'Upload failed');
+                setError(result.error || result.message || 'Upload failed');
             }
         } catch (err: any) {
             setError('Network error: ' + err.message);

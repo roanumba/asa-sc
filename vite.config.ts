@@ -24,6 +24,12 @@ export default defineConfig(({ command, mode }) => {
       replacePublicUrl(base),
     ],
     base: base,
+    define: {
+      __BUILD_TIME__: JSON.stringify(new Date().toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })),
+    },
     server: {
       port: 3000,
       open: true,

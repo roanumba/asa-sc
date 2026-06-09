@@ -114,8 +114,8 @@ export const FormView = () => {
                     dialog.setBusy(false);
 
                     if (result?.error) {
-                        toastBar.error(result.message || 'Error uploading file');
-                        resolve({ success: false, error: result.message });
+                        toastBar.error(result.error || result.message || 'Error uploading file');
+                        resolve({ success: false, error: result.error || result.message });
                     } else {
                         resolve({ success: true });
                     }
