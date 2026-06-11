@@ -134,7 +134,12 @@ try {
             updateConfig($input);
             break;
 
-        // File endpoints
+        case preg_match('#^/admin/resend-form$#', $path) && $method === 'POST':
+            require_once __DIR__ . '/auth.php';
+            require_once __DIR__ . '/admin.php';
+            resendFormNumber($input);
+            break;
+
         case preg_match('#^/files/upload$#', $path) && $method === 'POST':
             require_once __DIR__ . '/files.php';
             handleFileUpload();

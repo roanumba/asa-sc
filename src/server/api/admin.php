@@ -206,3 +206,63 @@ function updateConfig($input) {
         Response::error($e->getMessage(), 500);
     }
 }
+
+/**
+ * Resend the form number to the applicant's email address.
+ */
+function resendFormNumber($input) {
+    requireAdmin();
+
+    try {
+        $formNumber = isset($input->formNumber) ? strtoupper(trim($input->formNumber)) : '';
+
+        if (!$formNumber) {
+            Response::validationError(['formNumber'], 'Form number is required');
+        }
+
+        $con = getConnection();
+
+        // Get application record details (email, firstName)
+        $sql = "SELECT email, firstName FROM scholarship WHERE formNumber = ?";
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param($stmt, "s", $formNumber);
+        mysqli_stmt_execute($stmt);
+        $application = safe_fetch_assoc($stmt);
+        mysqli_stmt_close($stmt);
+        mysqli_close($con);
+
+        if (!$application) {
+            Response::error('Application not found', 404);
+        }
+
+        $email = $application['email'];
+        $firstName = $application['firstName'];
+
+        if (empty($email)) {
+            Response::error('No email address registered for this application', 400);
+        }
+
+        // Send the email (same structure as initApplication)
+        require_once __DIR__ . '/utils/mailService.php';
+        $subject = 'ASA-SC/ASWA-SC Scholarship - Your Form Number';
+        $body    = '<div style="font-size:16px;text-align:center;">'
+            . 'Dear ' . htmlspecialchars($firstName) . ',<br><br>'
+            . 'Here is your scholarship application details.<br>'
+            . 'Your form number is: <b style="font-size:22px;">' . $formNumber . '</b><br><br>'
+            . 'Please use this form number to access and complete your application.<br>'
+            . 'If you did not request this, you can ignore this email.'
+            . '</div>';
+        $mailSent = sendEmail($email, $subject, $body);
+
+        Response::logEmail('RESEND FORM', $formNumber, $email, $mailSent);
+
+        if (!$mailSent) {
+            error_log("EMERGENCY Resend Candidate Form: Email failed to send to $email. Form Number: $formNumber");
+            Response::error('Failed to send email. Please check server SMTP configuration.', 500);
+        }
+
+        Response::success(null, 'Form number successfully resent to ' . $email);
+    } catch (Exception $e) {
+        Response::error($e->getMessage(), 500);
+    }
+}

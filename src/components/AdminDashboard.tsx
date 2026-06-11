@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { authService } from '../services/AuthService';
 import { fetchWithoutToken } from '../services/ServerService';
 import { store } from '../index';
+import { Modal } from '../ui/Modal';
 
 interface Application {
     formNumber: string;
@@ -47,6 +48,11 @@ export const AdminDashboard: React.FC = () => {
     const [showSettings, setShowSettings] = useState(false);
     const [config, setConfig] = useState<SystemConfig>({ openingDate: '', closingDate: '' });
     const [savingConfig, setSavingConfig] = useState(false);
+
+    const [resendingMap, setResendingMap] = useState<Record<string, boolean>>({});
+    const [actionError, setActionError] = useState('');
+    const [actionSuccess, setActionSuccess] = useState('');
+    const [confirmResendFormNumber, setConfirmResendFormNumber] = useState<string | null>(null);
 
     useEffect(() => {
         checkAuth();
@@ -144,6 +150,34 @@ export const AdminDashboard: React.FC = () => {
         e.preventDefault();
         setPagination({ ...pagination, page: 1 });
         loadApplications();
+    };
+
+    const handleResendFormNumber = (formNumber: string) => {
+        setConfirmResendFormNumber(formNumber);
+    };
+
+    const triggerResendFormNumber = async (formNumber: string) => {
+        try {
+            setResendingMap(prev => ({ ...prev, [formNumber]: true }));
+            setActionError('');
+            setActionSuccess('');
+            const response = await fetchWithoutToken('/admin/resend-form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ formNumber }),
+            });
+            if (response && response.success) {
+                setActionSuccess(response.message || `Form number successfully resent.`);
+            } else {
+                setActionError(response?.error || 'Failed to resend form number.');
+            }
+        } catch (err: any) {
+            setActionError(err.message || 'An error occurred while resending.');
+        } finally {
+            setResendingMap(prev => ({ ...prev, [formNumber]: false }));
+        }
     };
 
     const handleExport = async () => {
@@ -252,6 +286,20 @@ export const AdminDashboard: React.FC = () => {
                 </div>
             )}
 
+            {actionError && (
+                <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                    {actionError}
+                    <button type="button" className="btn-close" onClick={() => setActionError('')}></button>
+                </div>
+            )}
+
+            {actionSuccess && (
+                <div className="alert alert-success alert-dismissible fade show" role="alert">
+                    {actionSuccess}
+                    <button type="button" className="btn-close" onClick={() => setActionSuccess('')}></button>
+                </div>
+            )}
+
             {loading ? (
                 <div className="text-center py-5">
                     <div className="spinner-border" role="status">
@@ -336,12 +384,21 @@ export const AdminDashboard: React.FC = () => {
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <button 
-                                                            className="btn btn-sm btn-outline-primary"
-                                                            onClick={() => history.push(`/admin/application/${app.formNumber}`)}
-                                                        >
-                                                            View
-                                                        </button>
+                                                        <div className="d-flex gap-2">
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-primary"
+                                                                onClick={() => history.push(`/admin/application/${app.formNumber}`)}
+                                                            >
+                                                                View
+                                                            </button>
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-secondary"
+                                                                onClick={() => handleResendFormNumber(app.formNumber)}
+                                                                disabled={resendingMap[app.formNumber]}
+                                                            >
+                                                                {resendingMap[app.formNumber] ? 'Resending...' : 'Resend Code'}
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))
@@ -454,6 +511,33 @@ export const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {confirmResendFormNumber && (
+                <Modal
+                    show={!!confirmResendFormNumber}
+                    onHide={() => setConfirmResendFormNumber(null)}
+                    title="Confirm Resend"
+                    actions={
+                        <>
+                            <button className="btn btn-secondary" onClick={() => setConfirmResendFormNumber(null)}>
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    const formNo = confirmResendFormNumber;
+                                    setConfirmResendFormNumber(null);
+                                    triggerResendFormNumber(formNo);
+                                }}
+                            >
+                                Resend
+                            </button>
+                        </>
+                    }
+                >
+                    <p>Are you sure you want to resend the form number for application <strong>{confirmResendFormNumber}</strong>?</p>
+                </Modal>
             )}
         </div>
     );

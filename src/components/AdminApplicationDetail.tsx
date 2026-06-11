@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { authService } from '../services/AuthService';
 import { fetchWithoutToken } from '../services/ServerService';
+import { Modal } from '../ui/Modal';
 
 interface ApplicationData {
     formNumber: string;
@@ -35,6 +36,10 @@ export const AdminApplicationDetail: React.FC = () => {
     const [appData, setAppData] = useState<ApplicationData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [resending, setResending] = useState(false);
+    const [actionError, setActionError] = useState('');
+    const [actionSuccess, setActionSuccess] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     useEffect(() => {
         checkAuth();
@@ -65,6 +70,35 @@ export const AdminApplicationDetail: React.FC = () => {
         }
     };
 
+    const handleResendFormNumber = () => {
+        setShowConfirmModal(true);
+    };
+
+    const triggerResendFormNumber = async () => {
+        if (!appData) return;
+        try {
+            setResending(true);
+            setActionError('');
+            setActionSuccess('');
+            const response = await fetchWithoutToken('/admin/resend-form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ formNumber: appData.formNumber }),
+            });
+            if (response && response.success) {
+                setActionSuccess(response.message || `Form number successfully resent.`);
+            } else {
+                setActionError(response?.error || 'Failed to resend form number.');
+            }
+        } catch (err: any) {
+            setActionError(err.message || 'An error occurred while resending.');
+        } finally {
+            setResending(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="text-center py-5">
@@ -92,10 +126,33 @@ export const AdminApplicationDetail: React.FC = () => {
         <div className="container mt-4 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Application Details: {appData.formNumber}</h2>
-                <button className="btn btn-secondary" onClick={() => history.push('/admin/dashboard')}>
-                    &larr; Back to Dashboard
-                </button>
+                <div className="d-flex gap-2">
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={handleResendFormNumber}
+                        disabled={resending}
+                    >
+                        {resending ? 'Resending...' : 'Resend Form Number'}
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => history.push('/admin/dashboard')}>
+                        &larr; Back to Dashboard
+                    </button>
+                </div>
             </div>
+
+            {actionError && (
+                <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                    {actionError}
+                    <button type="button" className="btn-close" onClick={() => setActionError('')}></button>
+                </div>
+            )}
+
+            {actionSuccess && (
+                <div className="alert alert-success alert-dismissible fade show" role="alert">
+                    {actionSuccess}
+                    <button type="button" className="btn-close" onClick={() => setActionSuccess('')}></button>
+                </div>
+            )}
 
             <div className="row">
                 <div className="col-md-8">
@@ -243,6 +300,31 @@ export const AdminApplicationDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+            {showConfirmModal && appData && (
+                <Modal
+                    show={showConfirmModal}
+                    onHide={() => setShowConfirmModal(false)}
+                    title="Confirm Resend"
+                    actions={
+                        <>
+                            <button className="btn btn-secondary" onClick={() => setShowConfirmModal(false)}>
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    setShowConfirmModal(false);
+                                    triggerResendFormNumber();
+                                }}
+                            >
+                                Resend
+                            </button>
+                        </>
+                    }
+                >
+                    <p>Are you sure you want to resend the form number to <strong>{appData.email}</strong>?</p>
+                </Modal>
+            )}
         </div>
     );
 };

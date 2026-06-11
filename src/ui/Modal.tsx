@@ -10,6 +10,7 @@ interface Props {
   children:ReactNode;
   actions?:ReactNode;
   title?:ReactNode;
+  size?: 'sm' | 'lg' | 'xl';
 }
 
 export const Modal = (props:Props) => {
@@ -17,11 +18,10 @@ export const Modal = (props:Props) => {
   const Actions=()=>{
     return  props.actions?<>{props.actions}</>:<Button onClick={props.onHide}>Close</Button>;
   } ;
-
+  const sz=props.size
   return (
     <BsModal
       {...props}
-      size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
       backdrop={'static'}

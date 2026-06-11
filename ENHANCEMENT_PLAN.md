@@ -1,6 +1,6 @@
 # ASA Scholarship Application Enhancement Plan
 
-**Status:** Phase 1 Complete (Admin Security & Features Fully Implemented)
+**Status:** Phase 1 & Deployment Foundations Complete (BrowserRouter, dynamic subdirectory routing, database authentication, production environment overrides, and upload replacement UX fully implemented)
 **Created:** February 2026
 **Last Updated:** June 2026
 
@@ -20,26 +20,26 @@ This plan outlines a comprehensive enhancement of the ASA-SC/ASWA-SC scholarship
    - Middleware layer for authentication, CORS, and rate limiting
    - MVC pattern with controllers, models, and utilities
 
-2. **Authentication System** ✅ COMPLETED (Simple Session-Based)
-   - **Implemented:** Session-based admin authentication
+2. **Authentication System** ✅ COMPLETED (Database Session-Based)
+   - **Implemented:** Session-based admin database authentication (BCrypt hashing, `admin_users` table migration)
    - **Future:** JWT tokens for candidates with passwordless magic links
    - **Future:** Duplicate prevention with SHA256 composite hash
 
 3. **Enhanced File Upload Flow** 🔄 IN PROGRESS
    - ✅ Descriptive filename generation (`{formNumber}_{first10chars}.{ext}`)
    - ✅ Automatic cleanup of old files on re-upload
+   - ✅ Document replacement/edit capabilities via candidate preview screen
    - **Future:** Upload during form entry (not after submission)
    - **Future:** Temporary storage with cleanup
-   - **Future:** Preview page showing all data + documents
-   - **Future:** Replace/delete capabilities
+   - **Future:** Pre-submission preview page showing all data + documents
 
 4. **Admin Dashboard** ✅ COMPLETED
    - ✅ Application management with search/filter/pagination
    - ✅ Document status indicators
    - ✅ CSV export functionality
+   - ✅ Settings management (Opening/Closing date editing UI)
    - **Future:** Statistics and reporting
    - **Future:** Audit logging
-   - **Future:** Settings management
 
 5. **Security-First Approach** ✅ COMPLETED
    - ✅ Eliminated dynamic function call security vulnerability
@@ -523,6 +523,16 @@ When implementing remaining phases:
 ---
 
 ## Change Log
+
+### June 2026 (Deployment, Routing, & Upload UX Polish)
+- ✅ **Clean HTML5 Routing (BrowserRouter)**: Switched from HashRouter (`/#/`) to BrowserRouter to support clean, hash-free URL structures. The router is dynamically configured with a `basename` parsed from the HTML `<base>` tag.
+- ✅ **Synchronous Base Tag Injection**: Created a synchronous inline script in `index.html` that strips React Router path suffixes (e.g. `/admin/dashboard`, `/new-form`) to extract the exact subdirectory (e.g., `/asa-aswa/` or `/`) and injects the `<base>` tag before assets are parsed, preventing 404 errors on deep-link refreshes.
+- ✅ **Production Env Override (copyProd.js)**: Configured the build process to copy a gitignored production environment configuration file (`.env.production`) to the target server's `/server/.env` path during production builds (`pnpm run build-prod`), keeping local development configuration separate.
+- ✅ **On-Demand Configuration Loading**: Refactored the constants in `ServerService.ts` to dynamic function getters (`getApiUrl()`, `getLegacyApiUrl()`) and added a `force` reload option to `StoreService.init()`. Configured the admin dashboard settings modal to trigger a forced store refresh on save, keeping in-memory dates in sync without page reloads.
+- ✅ **Relative Build Assets**: Configured `vite.config.ts` to use relative asset prefixing (`base: './'`) for all compile operations (both dev and production builds) using Vite's configuration `command` argument (`command === 'serve' ? '/' : './'`), ensuring build files run in any directory structure out-of-the-box.
+- ✅ **Upload Success UX Polish**: Fixed response success verification in `DocumentReplaceModal.tsx` to check `result.success` instead of `result.error === false` to match the standardized JSON response. This closes the replace modal immediately on success and refreshes the preview.
+- ✅ **Compile-Time Versioning**: Configured Vite to inject a compile-time build timestamp (`__BUILD_TIME__`) displayed as a fixed-position `Version: <date:time>` footer at the bottom-right corner of the Home screen.
+- ✅ **Active Period Route Guards**: Redesigned `RouteHome.tsx` redirect guards to run on every route transition and automatically redirect users away from status pages (`/openingPage` or `/closedPage`) back to the home page if the scholarship is currently active/open.
 
 ### June 2026 (Phase 1 Completion)
 - ✅ **Database Admin Auth**: Created the `admin_users` table schema, database migration scripts, and refactored authentication backend (`auth.php`) to validate sessions against it. Removed all hardcoded admin credentials.
