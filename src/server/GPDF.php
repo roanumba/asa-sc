@@ -66,16 +66,16 @@ if ($accessCode==='AsaGpdf||') {
         $pdf->Cell(0, 10, 'Name of College/ University ______________________________________________', 0, 1);
         $pdf->Cell(0, 10, 'Address _______________________________________________________________ ', 0, 1);
         $pdf->Cell(0, 10, 'Proposed Major Area of Study __________________________________________', 0, 1);
+        $pdf->Cell(0, 10, 'Profile: ', 0, 1);
         $pdf->Cell(0, 10, ' ', 0, 1);
         $pdf->Cell(0, 10, ' ', 0, 1);
         $pdf->Cell(0, 10, ' ', 0, 1);
         $pdf->Cell(0, 10, ' ', 0, 1);
         $pdf->Cell(0, 10, ' ', 0, 1);
-        $pdf->Cell(0, 10, 'Signature of Applicant ____________________________Date ______________', 0, 1);
-        $pdf->Cell(0, 10, 'Signature of Parent or Guardian _____________________   Date ____________', 0, 1);
 
         $pdf->SetFont('Arial', 'I', 12);
         $pdf->writeText(150, 10, $rows["formNumber"]);
+        $pdf->writeText(150, 20, $rows["timeStamp"]);
         $pdf->writeText(60, 30, $rows["firstName"] . '    ' . $rows["middleName"] . '    ' . $rows["lastName"]);
         $pdf->writeText(45, 40, $rows["email"]);
         $pdf->writeText(25, 50, $rows["age"]);
@@ -92,8 +92,8 @@ if ($accessCode==='AsaGpdf||') {
         $pdf->writeText(80, 142, $rows["collegeName"]);
         $pdf->writeText(35, 152, replaceWitheSpace($rows["collegeAddress"]));
         $pdf->writeText(80, 162, $rows["studentMajor"]);
-        $pdf->writeText(80, 172, $rows["profile"]);
-        $pdf->writeText(150, 192, $rows["timeStamp"]);
+        $pdf->SetFont('Arial', 'I', 10);
+        $pdf->writeText(30, 172, $rows["profile"]);
 
 
         $letter = $rows["admissionLetter"];

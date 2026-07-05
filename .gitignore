@@ -31,6 +31,8 @@ src/server/.env.*
 
 # PHP Composer dependencies
 src/server/vendor/
+src/server/images/
+src/server/passports/
 
 npm-debug.log*
 yarn-debug.log*
